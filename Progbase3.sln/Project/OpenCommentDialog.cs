@@ -5,33 +5,41 @@ using System.Collections.Generic;
 public class OpenCommentDialog: Dialog
 {
     public bool deleted;
-    public bool updated;
+    public bool updated = false;
     private UserReposytory userReposytory;
     private PostReposytory postReposytory;
     private CommentReposytory commentReposytory;
     protected Comment comment;
     protected User user;
+    protected Post post;
+    protected User currentUser;
     private TextView commentInput;
-    public OpenCommentDialog(Comment comment, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+    private Button editCommentBtn;
+    public OpenCommentDialog(User current, Comment comment, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
     {
         this.userReposytory = userReposytory;
         this.postReposytory = postReposytory;
         this.commentReposytory = commentReposytory;
+        this.comment = comment;
         this.user = userReposytory.GetByID(comment.userId);
+        this.currentUser = current;
 
         this.Title = "Post";
         Button backBtn = new Button("Back");
         backBtn.Clicked += OnCreateDialogSubmit;
         this.AddButton(backBtn);
 
-        Button editProfileBtn = new Button("Edit");
-        editProfileBtn.Clicked += OnEditPost;
-        this.AddButton(editProfileBtn);
+        if(currentUser.id == user.id)
+        {
+            this.editCommentBtn = new Button("Edit");
+            editCommentBtn.Clicked += OnEditComment;
+            this.AddButton(editCommentBtn);
+        }
 
         Button deleteBtn = new Button("Delete")
         {
-            X = Pos.Right(editProfileBtn),
-            Y = Pos.Top(editProfileBtn),           
+            X = Pos.Right(editCommentBtn),
+            Y = Pos.Top(editCommentBtn),       
         };
         deleteBtn.Clicked += OnPostDelete;
         this.AddButton(deleteBtn);
@@ -60,34 +68,46 @@ public class OpenCommentDialog: Dialog
         if(comment != null)
         {
             this.comment = comment;
+            this.post = postReposytory.GetByID(comment.postId);
             this.user = userReposytory.GetByID(comment.userId);
         }
+    }
+    public Comment GetComment()
+    {
+        return this.comment;
     }
     private void OnCreateDialogSubmit()
     {
         Application.RequestStop();
     }
-    private void OnEditPost()
+    private void OnEditComment()
     {
-        dialog = new EditPostDialog();
-        dialog.SetPost(this.comment, this.user);
+        EditCommentDialog dialog = new EditCommentDialog();
+        //dialog.SetComment();
+        MessageBox.ErrorQuery("", comment.id.ToString(),"ok");
+        if(this.post == null)
+        {
+            MessageBox.ErrorQuery("","where is post??","ok");
+        }
+        dialog.SetComment(this.comment, this.post, this.user);
         Application.Run(dialog);
 
         if(!dialog.canceled)
         {
             this.updated = true;
-            Post updatedpost = dialog.GetPost();
+            Comment updatedcomment = dialog.GetComment();
             //postReposytory.Update(this.post.id, updatedpost);
-            this.SetComment(updatedpost);
+            this.SetComment(updatedcomment);
             //MessageBox.ErrorQuery("Update concert", updatedpost.post, "Ok");
-            bool result = postReposytory.Update(this.post.id, updatedpost);
-            if(!result)
+            bool result = commentReposytory.Update(this.post.id, updatedcomment);
+            if(result)
             {
                 //this.userPosts = GetListOfPosts(user.posts);
-                this.post.post = updatedpost.post;
-                this.SetComment(this.post);
-                commentInput.Text = this.post.post;
-                allCommentsToPostListView.SetSource(this.postComments);
+                this.comment.comment = updatedcomment.comment;
+                this.SetComment(this.comment);
+                commentInput.Text = this.comment.comment;
+                this.updated = true;
+                // allCommentsToPostListView.SetSource(this.postComments);
             }
             else
             {

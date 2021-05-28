@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class OpenPostDialog: Dialog
 {
     public bool deleted;
-    public bool updated;
+    public bool updated = false;
     private UserReposytory userReposytory;
     private PostReposytory postReposytory;
     private CommentReposytory commentReposytory;
@@ -14,16 +14,19 @@ public class OpenPostDialog: Dialog
     private int currentpage = 1;
     protected Post post;
     protected User user;
+    protected User currentUser;
     private TextView postInput;
     private ListView allCommentsToPostListView;
     private Button prevPageBtn;
     private Button nextPageBtn;
+    private Button editProfileBtn;
     private Label pageLbl;
     private Label totalPagesLbl;
     private FrameView frameView;
     private Label noCommentLbl;
-    public OpenPostDialog(Post post, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+    public OpenPostDialog(User currentUser, Post post, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
     {
+        this.currentUser = currentUser;
         this.userReposytory = userReposytory;
         this.postReposytory = postReposytory;
         this.commentReposytory = commentReposytory;
@@ -38,9 +41,12 @@ public class OpenPostDialog: Dialog
         backBtn.Clicked += OnCreateDialogSubmit;
         this.AddButton(backBtn);
 
-        Button editProfileBtn = new Button("Edit");
-        editProfileBtn.Clicked += OnEditPost;
-        this.AddButton(editProfileBtn);
+        if(this.user.id == this.currentUser.id)
+        {
+            editProfileBtn = new Button("Edit");
+            editProfileBtn.Clicked += OnEditPost;
+            this.AddButton(editProfileBtn);
+        }
 
         Button deleteBtn = new Button("Delete")
         {
@@ -66,6 +72,7 @@ public class OpenPostDialog: Dialog
     
         Label usernameLbl = new Label(2,6,$"Created by: {this.user.username}"); //мб створити кнопку з переходом на профіль
         this.Add(usernameLbl);
+        
         Label createdAt = new Label(2,8,$"Created at: {this.post.createdAt.ToString()}");
         this.Add(createdAt);
 
@@ -120,7 +127,40 @@ public class OpenPostDialog: Dialog
             frameView.Add(allCommentsToPostListView);
         }
         this.Add(frameView);
+
+        Button createNewCommentBtn = new Button("Create new comment") // мб змінити розташування
+        {
+            X = rightColumnX,
+            Y = Pos.Bottom(frameView),
+        };
+        createNewCommentBtn.Clicked += OnCreateNewComment;
+        this.AddButton(createNewCommentBtn);
+
         UpdateCurrentPage();
+    }
+    private void OnCreateNewComment()
+    {
+        CreateCommentDialog dialog = new CreateCommentDialog();
+        dialog.SetAutor_Post(this.user, this.post);
+        Application.Run(dialog);
+
+        if(!dialog.canceled)
+        {
+            if(dialog.GetComment() != null)
+            {
+                Comment commnet = dialog.GetComment();
+                // Post post = postReposytory.GetByID(commnet.postId);
+                // User user = userReposytory.GetByID(commnet.userId);
+                this.commentReposytory.Insert(commnet, this.post, this.user);
+                // user.comments.Add(commnet.id);
+                // post.commentIds.Add(commnet.id);
+                this.user.comments = userReposytory.UserComments(user.id);
+                this.post.commentIds = postReposytory.CommentsOfPostID(post.id);
+                this.postComments = GetListOfComments(this.post.commentIds);
+                allCommentsToPostListView.SetSource(this.postComments);
+                UpdateCurrentPage();
+            }
+        }
     }
     private int NumberOfPages()
     {
@@ -136,45 +176,46 @@ public class OpenPostDialog: Dialog
     }
     private void OnOpenComment(ListViewItemEventArgs args)
     {
-        // Post post = (Post)args.Value;
-        // OpenPostDialog dialog = new OpenPostDialog();
-        // dialog.SetPost(post);
+        Comment comment = (Comment)args.Value;
+        comment.userId = commentReposytory.UserID(comment.id);
+        User userCC = userReposytory.GetByID(comment.userId);
+        //MessageBox.ErrorQuery("", userCC.id.ToString(),"ok");
+        comment.postId = commentReposytory.PostID(comment.id);
+        Post postC = postReposytory.GetByID(comment.postId);
+        //MessageBox.ErrorQuery("", postC.id.ToString(),"ok");
+        OpenCommentDialog dialog = new OpenCommentDialog(this.user, comment, this.userReposytory, this.postReposytory, this.commentReposytory);
+        dialog.SetComment(comment);
 
-        // Application.Run(dialog);
+        Application.Run(dialog);
 
-        // if(dialog.deleted)
-        // {
-        //     // bool result = concertReposytory.Delete(concert.id);
-        //     // if(result)
-        //     // {
-        //     //     int pages = concertReposytory.NumberOfPages(searchValue,pageLength);
-        //     //     if(currentpage > pages && pageLength > 1)
-        //     //     {
-        //     //         pages--;
-        //     //         this.UpdateCurrentPage();
-        //     //     }
-        //     //     allConcertListView.SetSource(concertReposytory.ConcertsOnPage(currentpage));
-        //     // }
-        //     // else
-        //     // {
-        //     //     MessageBox.ErrorQuery("Delete concert", "Can't delete concert", "Ok");
-        //     // }
-        // }
-        // if(dialog.updated)
-        // {
-        //     // if(dialog.GetConcert() != null)
-        //     // {
-        //     //     bool result = concertReposytory.Update(concert.id, dialog.GetConcert());
-        //     //     if(result)
-        //     //     {
-        //     //         allConcertListView.SetSource(concertReposytory.ConcertsOnPage(currentpage));
-        //     //     }
-        //     //     else
-        //     //     {
-        //     //         MessageBox.ErrorQuery("Update concert", "Can't update concert", "Ok");
-        //     //     }
-        //     // }
-        // }
+        if(dialog.deleted)
+        {
+            bool result = commentReposytory.Delete(comment, userCC, postC);
+            if(result)
+            {
+                OnCreateDialogSubmit();
+            }
+            else
+            {
+                MessageBox.ErrorQuery("Delete comment", "Can't delete comment", "Ok");
+            }
+        }
+        if(dialog.updated)
+        {
+            if(dialog.GetComment() != null)
+            {
+                bool result = commentReposytory.Update(comment.id, dialog.GetComment());
+                if(result)
+                {
+                    UpdateCurrentPage();
+                }
+                else
+                {
+                    MessageBox.ErrorQuery("Update concert", "Can't update concert", "Ok");
+                }
+            }
+            
+        }
     }
     private void OnPreviousPage()
     {
@@ -206,12 +247,15 @@ public class OpenPostDialog: Dialog
         {
             currentpage = totalPages;
         }
+        long postId = post.id;
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
-        user.posts = userReposytory.UserPosts(this.user.id);
+        this.user.comments = userReposytory.UserComments(user.id);
+        this.post.commentIds = postReposytory.CommentsOfPostID(postId);
+        this.postComments = GetListOfComments(this.post.commentIds);
+        allCommentsToPostListView.SetSource(this.postComments);
         allCommentsToPostListView.SetSource(GetSearchPage());
         
-        //MessageBox.ErrorQuery("", currentpage.ToString(), "ok");
         prevPageBtn.Visible = (currentpage != 1);
         nextPageBtn.Visible = (currentpage != totalPages);
     }
@@ -279,17 +323,13 @@ public class OpenPostDialog: Dialog
         {
             this.updated = true;
             Post updatedpost = dialog.GetPost();
-            //postReposytory.Update(this.post.id, updatedpost);
-            this.SetPost(updatedpost);
-            //MessageBox.ErrorQuery("Update concert", updatedpost.post, "Ok");
             bool result = postReposytory.Update(this.post.id, updatedpost);
-            if(!result)
+            if(result)
             {
-                //this.userPosts = GetListOfPosts(user.posts);
                 this.post.post = updatedpost.post;
                 this.SetPost(this.post);
-                postInput.Text = this.post.post;
-                allCommentsToPostListView.SetSource(this.postComments);
+                this.postInput.Text = this.post.post;
+                UpdateCurrentPage();
             }
             else
             {

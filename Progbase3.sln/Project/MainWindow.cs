@@ -66,9 +66,17 @@ public class MainWindow: Window
         }
     }
     private void OnViewUsersBtnClicked()
-    {}
+    {
+        ViewUsersDialog dialog = new ViewUsersDialog(this.user, this.userReposytory, this.postReposytory, this.commentReposytory);
+        //dialog.SetUser(this.user, this.user.posts);
+        Application.Run(dialog);
+    }
     private void OnViewPostsBtnClicked()
-    {}
+    {
+        ViewPostsDialog dialog = new ViewPostsDialog(this.user, this.userReposytory, this.postReposytory, this.commentReposytory);
+        //dialog.SetUser(this.user, this.user.posts);
+        Application.Run(dialog);
+    }
     private void OnCreateNewPostBtnClicked()
     {
         CreatePostDialog dialog = new CreatePostDialog();

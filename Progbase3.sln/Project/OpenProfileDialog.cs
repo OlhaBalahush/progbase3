@@ -10,7 +10,7 @@ public class OpenProfileDialog: Dialog
     private List<Post> userPosts;
     private int pageLength = 5;
     private int currentpage = 1;
-    protected User user;
+    protected User currentUser;
     public bool deleted;
     public bool updated;
     private TextField usernameInput;
@@ -24,8 +24,8 @@ public class OpenProfileDialog: Dialog
         this.userReposytory = userReposytory;
         this.postReposytory = postReposytory;
         this.commentReposytory = commentReposytory;
-        this.user = user;
-        this.user.posts = userReposytory.UserPosts(this.user.id);
+        this.currentUser = user;
+        this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
         this.userPosts = GetListOfPosts(user.posts);
         this.Title = "My profile";
         allPostOfUserListView = new ListView((IList)null)
@@ -118,7 +118,7 @@ public class OpenProfileDialog: Dialog
     {
         Post post = (Post)args.Value;
         User user = userReposytory.GetByID(post.userId);
-        OpenPostDialog dialog = new OpenPostDialog(post, this.userReposytory, this.postReposytory, this.commentReposytory);
+        OpenPostDialog dialog = new OpenPostDialog(this.currentUser, post, this.userReposytory, this.postReposytory, this.commentReposytory);
         //dialog.SetPost(post);
 
         Application.Run(dialog);
@@ -135,8 +135,8 @@ public class OpenProfileDialog: Dialog
                     this.UpdateCurrentPage();
                 }
                 this.UpdateCurrentPage();
-                this.user.posts = userReposytory.UserPosts(this.user.id);
-                this.userPosts = GetListOfPosts(this.user.posts);
+                this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
+                this.userPosts = GetListOfPosts(this.currentUser.posts);
                 allPostOfUserListView.SetSource(this.userPosts);
             }
             else
@@ -151,14 +151,14 @@ public class OpenProfileDialog: Dialog
                 bool result = postReposytory.Update(post.id, dialog.GetPost());
                 if(result)
                 {
-                    this.user.posts = userReposytory.UserPosts(this.user.id);
-                    this.userPosts = GetListOfPosts(this.user.posts);
+                    this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
+                    this.userPosts = GetListOfPosts(this.currentUser.posts);
                     allPostOfUserListView.SetSource(this.userPosts);
                     this.UpdateCurrentPage();
                 }
                 else
                 {
-                    MessageBox.ErrorQuery("Update concert", "Can't update concert", "Ok");
+                    MessageBox.ErrorQuery("Update profile", "Can't update profile", "Ok");
                 }
             }
         }
@@ -176,8 +176,8 @@ public class OpenProfileDialog: Dialog
         }
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
-        this.user.posts = userReposytory.UserPosts(this.user.id);
-        this.userPosts = GetListOfPosts(this.user.posts);
+        this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
+        this.userPosts = GetListOfPosts(this.currentUser.posts);
         allPostOfUserListView.SetSource(GetSearchPage());
 
         prevPageBtn.Visible = (currentpage != 1);
@@ -205,7 +205,7 @@ public class OpenProfileDialog: Dialog
     private void OnEditProfile()
     {
         EditProfileDialog dialog = new EditProfileDialog();
-        dialog.SetUser(this.user);
+        dialog.SetUser(this.currentUser);
         Application.Run(dialog);
 
         if(!dialog.canceled)
@@ -214,13 +214,13 @@ public class OpenProfileDialog: Dialog
             User updateduser = dialog.GetUser();
             //updateduser = dialog.GetUser();
             //MessageBox.ErrorQuery("Error", $"{updateduser.username}", "ok");
-            bool result = userReposytory.Update(this.user.id, updateduser);
+            bool result = userReposytory.Update(this.currentUser.id, updateduser);
             if(result)
             {
                 //this.userPosts = GetListOfPosts(user.posts);
-                this.user.username = updateduser.username;
-                this.SetUser(this.user);
-                usernameInput.Text = user.username;
+                this.currentUser.username = updateduser.username;
+                this.SetUser(this.currentUser);
+                this.usernameInput.Text = currentUser.username;
                 allPostOfUserListView.SetSource(this.userPosts);
             }
             else
@@ -235,13 +235,13 @@ public class OpenProfileDialog: Dialog
     {
         if(user != null)
         {
-            this.user = user;
+            this.currentUser = user;
             this.userPosts = GetListOfPosts(user.posts);
         }
     }
     public User GetUser()
     {
-        return this.user;
+        return this.currentUser;
     }
     private List<Post> GetListOfPosts(List<long> postidS)
     {
@@ -292,7 +292,7 @@ public class OpenProfileDialog: Dialog
         {
             this.deleted = true;
             Application.RequestStop();
-            bool delete = userReposytory.Delete(user.id); // check
+            bool delete = userReposytory.Delete(currentUser.id); // check
             if(!delete)
             {
                 MessageBox.ErrorQuery("Delete post", "Can't delete post", "Ok");

@@ -1,8 +1,10 @@
+using System;
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
 public class UserReposytory
 {
     private SqliteConnection connection;
+    private int numberOfElementsOnPage = 5;
     public UserReposytory(SqliteConnection connection)
     {
         this.connection = connection;
@@ -52,6 +54,94 @@ public class UserReposytory
         return postIDS;
     }
     
+    private long GetCount()
+        {
+            connection.Open();
+        
+            SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"SELECT COUNT(*) FROM users";
+            
+            long count = (long)command.ExecuteScalar();
+            return count;
+        }
+    public int NumberOfPages(string searchValue, int numberOfElementsOnPage)
+        {
+            this.numberOfElementsOnPage = numberOfElementsOnPage;
+            int count = 0;
+            if(searchValue != "")
+            {
+                List<User> allusers = this.GetSearchValue(searchValue, numberOfElementsOnPage);
+                foreach (User item in allusers)
+                {
+                    count++;
+                }
+            }
+            else
+            {
+                count = (int)GetCount();
+            }
+
+            if(count % numberOfElementsOnPage == 0)
+            {
+                return count / numberOfElementsOnPage;
+            }
+            else
+            {
+                return count / numberOfElementsOnPage + 1;
+            }
+        }
+    public List<User> UserssOnPage(int numberOfPage)
+    {
+        connection.Open();
+
+        SqliteCommand command = connection.CreateCommand();
+        command.CommandText = @"SELECT * FROM users LIMIT $numberOfElementsOnPage OFFSET $fromElement";
+        command.Parameters.AddWithValue("$numberOfElementsOnPage", this.numberOfElementsOnPage);
+        command.Parameters.AddWithValue("$fromElement", (numberOfPage - 1) * this.numberOfElementsOnPage);
+
+        SqliteDataReader reader = command.ExecuteReader();
+        List<User> users = new List<User>();
+
+        while(reader.Read())
+        {
+            string username = reader.GetString(1);
+            int moderator = int.Parse(reader.GetString(2));
+            string password = reader.GetString(4);
+            DateTime createdAt = DateTime.Parse(reader.GetString(3));
+            User user = new User(username, moderator, password, createdAt.ToString());
+            user.id = int.Parse(reader.GetString(0));
+            users.Add(user);
+        }
+
+        reader.Close();
+        connection.Close();
+        return users;
+    }
+    public List<User> GetSearchPage(string searchValue, int page, int numberOfElementsOnPage)
+    {
+        if(searchValue == "")
+        {
+            return this.UserssOnPage(page);
+        }
+        return GetSearchValue(searchValue, numberOfElementsOnPage);
+    }
+    private List<User> GetSearchValue(string searchValue, int numberOfElementsOnPage)
+    {
+        List<User> concerts = new List<User>();
+        for(int i = 1; i <= NumberOfPages("", numberOfElementsOnPage); i++)
+        {
+            List<User> currentConcerts = UserssOnPage(i);
+            foreach (User item in currentConcerts)
+            {
+                if(item.username.Contains(searchValue))
+                {
+                    concerts.Add(item);
+                }
+            }
+        }
+        return concerts;
+    }
+
     public User GetByUsername(string username)
     {
         connection.Open();

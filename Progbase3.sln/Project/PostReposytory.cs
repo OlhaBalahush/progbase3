@@ -4,11 +4,11 @@ using System.Collections.Generic;
 public class PostReposytory
 {
     private SqliteConnection connection;
+    private int numberOfElementsOnPage = 5;
     public PostReposytory(SqliteConnection connection)
     {
         this.connection = connection;
     }
-    
     public long UserID(long postID)
     {
         connection.Open();
@@ -54,7 +54,92 @@ public class PostReposytory
         post.commentIds = commentIDS;
         return commentIDS;
     }
-    
+     private long GetCount()
+        {
+            connection.Open();
+        
+            SqliteCommand command = connection.CreateCommand();
+            command.CommandText = @"SELECT COUNT(*) FROM posts";
+            
+            long count = (long)command.ExecuteScalar();
+            return count;
+        }
+    public int NumberOfPages(string searchValue, int numberOfElementsOnPage)
+        {
+            this.numberOfElementsOnPage = numberOfElementsOnPage;
+            int count = 0;
+            if(searchValue != "")
+            {
+                List<Post> allusers = this.GetSearchValue(searchValue, numberOfElementsOnPage);
+                foreach (Post item in allusers)
+                {
+                    count++;
+                }
+            }
+            else
+            {
+                count = (int)GetCount();
+            }
+
+            if(count % numberOfElementsOnPage == 0)
+            {
+                return count / numberOfElementsOnPage;
+            }
+            else
+            {
+                return count / numberOfElementsOnPage + 1;
+            }
+        }
+    public List<Post> PostsOnPage(int numberOfPage)
+    {
+        connection.Open();
+
+        SqliteCommand command = connection.CreateCommand();
+        command.CommandText = @"SELECT * FROM posts LIMIT $numberOfElementsOnPage OFFSET $fromElement";
+        command.Parameters.AddWithValue("$numberOfElementsOnPage", this.numberOfElementsOnPage);
+        command.Parameters.AddWithValue("$fromElement", (numberOfPage - 1) * this.numberOfElementsOnPage);
+
+        SqliteDataReader reader = command.ExecuteReader();
+        List<Post> posts = new List<Post>();
+
+        while(reader.Read())
+        {
+            string postText = reader.GetString(1);
+            DateTime createdAt = DateTime.Parse(reader.GetString(2));
+            Post post = new Post(postText, createdAt.ToString());
+            post.id = int.Parse(reader.GetString(0));
+            posts.Add(post);
+        }
+
+        reader.Close();
+        connection.Close();
+        return posts;
+    }
+    public List<Post> GetSearchPage(string searchValue, int page, int numberOfElementsOnPage)
+    {
+        if(searchValue == "")
+        {
+            return this.PostsOnPage(page);
+        }
+        return GetSearchValue(searchValue, numberOfElementsOnPage);
+    }
+    private List<Post> GetSearchValue(string searchValue, int numberOfElementsOnPage)
+    {
+        List<Post> concerts = new List<Post>();
+        for(int i = 1; i <= NumberOfPages("", numberOfElementsOnPage); i++)
+        {
+            List<Post> currentConcerts = PostsOnPage(i);
+            foreach (Post item in currentConcerts)
+            {
+                if(item.post.Contains(searchValue))
+                {
+                    concerts.Add(item);
+                }
+            }
+        }
+        return concerts;
+    }
+
     //CRUD
     public long Insert(Post post, User user)
     {

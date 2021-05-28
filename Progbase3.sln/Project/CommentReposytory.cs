@@ -36,8 +36,8 @@ public class CommentReposytory
         connection.Open();
  
         SqliteCommand command = connection.CreateCommand();
-        command.CommandText = @"SELECT * FROM postComment WHERE idPost = $idPost";
-        command.Parameters.AddWithValue("$idPost", commentID);
+        command.CommandText = @"SELECT * FROM postComment WHERE idComment = $idComment";
+        command.Parameters.AddWithValue("$idComment", commentID);
         SqliteDataReader reader = command.ExecuteReader();
 
         while (reader.Read())
