@@ -1,33 +1,33 @@
 //Можна відфільтрувати пости по співпадінню тексту і експортувати всі знайдені пости з усіма їх коментарями у форматі XML
 using System;
 using Terminal.Gui;
+using System.Collections.Generic;
 public class ExportWindow: Dialog
 {
     public bool canceled;
-    protected TextView searchText;
-    protected TextField filename;
-    public ExportWindow()
+    private TextView searchText;
+    private TextField filename;
+    private PostReposytory postReposytory;
+    public ExportWindow(PostReposytory postReposytory)
     {
+        this.postReposytory = postReposytory;
         int rightColumnX = 20;
 
         Label fileNameLbl = new Label(2,4,"File name:");
         filename = new TextField("")
         {
             X = rightColumnX,
-            Y = Pos.Bottom(fileNameLbl),
-            Width = Dim.Fill(5),
-            Height = Dim.Percent(50),
+            Y = Pos.Top(fileNameLbl),
+            Width = 40,
         };
         this.Add(fileNameLbl, filename);
 
-        Label textSearchLbl = new Label(2,4,"Text:"); //TextField
+        Label textSearchLbl = new Label(2,2,"Text:"); //TextField
         searchText = new TextView()
         {
             X = rightColumnX,
-            Y = Pos.Bottom(textSearchLbl),
+            Y = Pos.Right(textSearchLbl),
             Width = Dim.Fill(5),
-            Height = Dim.Percent(50),
-            Text = "",
         };
         this.Add(textSearchLbl, searchText);
 
@@ -39,7 +39,14 @@ public class ExportWindow: Dialog
         cancelButton.Clicked += OnCreateDialogCanceled;
         this.AddButton(cancelButton);
     }
-    private void OnExportDialog(){}
+    private void OnExportDialog()
+    {
+        string searchValue = this.searchText.Text.ToString();
+        //перетворити у ліст по співпадінню
+        //перевірити чи коректно введено назву файлу
+        List<Post> posts = postReposytory.GetSearchValue_1(searchValue);
+        Export_Import.Export(posts, filename.Text.ToString());
+    }
     private void OnCreateDialogCanceled()
     {
         this.canceled = true;

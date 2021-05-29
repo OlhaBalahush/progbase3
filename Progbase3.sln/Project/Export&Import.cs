@@ -14,11 +14,11 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Collections.Generic;
 using System.Xml;
-public class Export_Import
+static class Export_Import
 {
     private static XmlSerializer sr = new XmlSerializer(typeof(List<Post>));
     private static StreamReader reader;
-    public void Export(List<Post> posts, string filename)
+    public static void Export(List<Post> posts, string filename)
     {
         StreamWriter output = new StreamWriter(filename);
         XmlWriterSettings set = new XmlWriterSettings();
@@ -27,7 +27,7 @@ public class Export_Import
         XmlWriter writer = XmlWriter.Create(output, set);
         sr.Serialize(writer, posts);
     }
-    public void Import(){}
+    public static void Import(){}
 }
 /*using System.Xml.Serialization;
 using System.IO;

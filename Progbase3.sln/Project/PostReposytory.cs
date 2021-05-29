@@ -128,7 +128,7 @@ public class PostReposytory
         }
         return GetSearchValue(searchValue, numberOfElementsOnPage);
     }
-    private List<Post> GetSearchValue(string searchValue, int numberOfElementsOnPage)
+    public List<Post> GetSearchValue(string searchValue, int numberOfElementsOnPage)
     {
         List<Post> concerts = new List<Post>();
         for(int i = 1; i <= NumberOfPages("", numberOfElementsOnPage); i++)
@@ -143,6 +143,32 @@ public class PostReposytory
             }
         }
         return concerts;
+    }
+    //треба щось змінити, хз ще що
+    public List<Post> GetSearchValue_1(string searchValue)
+    {
+        connection.Open();
+
+        SqliteCommand command = connection.CreateCommand();
+        command.CommandText = @"SELECT * FROM posts";
+
+        SqliteDataReader reader = command.ExecuteReader();
+        List<Post> posts = new List<Post>();
+        while(reader.Read())
+        {
+            string postText = reader.GetString(1);
+            DateTime createdAt = DateTime.Parse(reader.GetString(2));
+            Post post = new Post(postText, createdAt.ToString());
+            post.id = int.Parse(reader.GetString(0));
+            if(post.post.Contains(searchValue))
+            {
+                posts.Add(post);
+            }
+        }
+
+        reader.Close();
+        connection.Close();
+        return posts;
     }
 
     //CRUD

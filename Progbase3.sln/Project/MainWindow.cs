@@ -93,7 +93,11 @@ public class MainWindow: Window
             }
         }
     }
-    private void OnExportClicked(){}
+    private void OnExportClicked()
+    {
+        ExportWindow dialog  = new ExportWindow(this.postReposytory);
+        Application.Run(dialog);
+    }
     private void OnImportClicked(){}
     private void OnAbout(){}
     private void OnExit()
