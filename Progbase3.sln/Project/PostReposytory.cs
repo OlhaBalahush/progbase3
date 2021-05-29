@@ -32,27 +32,32 @@ public class PostReposytory
         connection.Close();
         return -1;
     }
-    public List<long> CommentsOfPostID(long postID)
+    public List<Comment> CommentsOfPostID(long postID)
     {
         connection.Open();
  
         SqliteCommand command = connection.CreateCommand();
-        command.CommandText = @"SELECT * FROM postComment WHERE idPost = $idPost";
+        command.CommandText = @"SELECT postComment.idPost, comments.id, comments.comment, comments.createdAt 
+        FROM postComment, comments WHERE postComment.idPost = $idPost 
+        AND comments.id = postComment.idComment";
         command.Parameters.AddWithValue("$idPost", postID);
         SqliteDataReader reader = command.ExecuteReader();
 
-        List<long> commentIDS = new List<long>();
+        List<Comment> comments = new List<Comment>();
         while (reader.Read())
         {
-            int commentId = int.Parse(reader.GetString(2));
-            commentIDS.Add(commentId);
+            string commenttext = reader.GetString(2);
+            string createdAt = reader.GetString(3);
+            Comment newcomment = new Comment(commenttext, createdAt);
+            newcomment.id= long.Parse(reader.GetString(1));
+            comments.Add(newcomment);
         }
 
         reader.Close();
         connection.Close();
         Post post = GetByID(postID);
-        post.commentIds = commentIDS;
-        return commentIDS;
+        post.comments = comments;
+        return comments;
     }
     private long GetCount()
         {
@@ -181,7 +186,7 @@ public class PostReposytory
         
         long newId = (long)command.ExecuteScalar();
         post.userId = user.id;
-        user.posts.Add(post.id);
+        user.posts.Add(post);
         
         connection.Close();
         return newId;
@@ -312,7 +317,7 @@ public class PostReposytory
         Post post = null;
         foreach (Post item in posts)
         {
-            List<long> comments = this.CommentsOfPostID(item.id);
+            List<Comment> comments = this.CommentsOfPostID(item.id);
             int numOfComments = comments.Count;
             if(numOfComments != 0 && numOfComments >= maxValue)
             {

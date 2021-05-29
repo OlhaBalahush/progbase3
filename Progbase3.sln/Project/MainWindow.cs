@@ -89,7 +89,7 @@ public class MainWindow: Window
             {
                 Post post = dialog.GetPost();
                 this.postReposytory.Insert(post, this.user);
-                user.posts.Add(post.id);
+                user.posts.Add(post);
             }
         }
     }

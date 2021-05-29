@@ -6,12 +6,12 @@ public class Post
     public string post;
     public DateTime createdAt;
     public long userId;
-    public List<long> commentIds;
+    public List<Comment> comments;
     public Post(string post, string createdAt)
     {
         this.post = post;
         this.createdAt = DateTime.Parse(createdAt);
-        commentIds = new List<long>();
+        comments = new List<Comment>();
     }
     public override string ToString()
     {

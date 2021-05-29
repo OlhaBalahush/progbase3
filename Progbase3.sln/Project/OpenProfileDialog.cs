@@ -26,7 +26,7 @@ public class OpenProfileDialog: Dialog
         this.commentReposytory = commentReposytory;
         this.currentUser = user;
         this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
-        this.userPosts = GetListOfPosts(user.posts);
+        this.userPosts = user.posts;
         this.Title = "My profile";
         allPostOfUserListView = new ListView((IList)null)
         {
@@ -136,7 +136,7 @@ public class OpenProfileDialog: Dialog
                 }
                 this.UpdateCurrentPage();
                 this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
-                this.userPosts = GetListOfPosts(this.currentUser.posts);
+                this.userPosts = currentUser.posts;
                 allPostOfUserListView.SetSource(this.userPosts);
             }
             else
@@ -152,7 +152,7 @@ public class OpenProfileDialog: Dialog
                 if(result)
                 {
                     this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
-                    this.userPosts = GetListOfPosts(this.currentUser.posts);
+                    this.userPosts = this.currentUser.posts;
                     allPostOfUserListView.SetSource(this.userPosts);
                     this.UpdateCurrentPage();
                 }
@@ -177,7 +177,7 @@ public class OpenProfileDialog: Dialog
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
         this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
-        this.userPosts = GetListOfPosts(this.currentUser.posts);
+        this.userPosts = currentUser.posts;
         allPostOfUserListView.SetSource(GetSearchPage());
 
         prevPageBtn.Visible = (currentpage != 1);
@@ -236,7 +236,7 @@ public class OpenProfileDialog: Dialog
         if(user != null)
         {
             this.currentUser = user;
-            this.userPosts = GetListOfPosts(user.posts);
+            this.userPosts = user.posts;
         }
     }
     public User GetUser()

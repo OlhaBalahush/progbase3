@@ -9,49 +9,60 @@ public class UserReposytory
     {
         this.connection = connection;
     }
-    public List<long> UserComments(long userID)
+    public List<Comment> UserComments(long userID)
     {
         connection.Open();
  
         SqliteCommand command = connection.CreateCommand();
-        command.CommandText = @"SELECT * FROM userComment WHERE idUser = $idUser";
+        // command.CommandText = @"SELECT * FROM userComment WHERE idUser = $idUser";
+        command.CommandText = @"SELECT userComment.idUser, comments.id, comments.comment, comments.createdAt 
+        FROM userComment, comments WHERE userComment.idUser = $idUser
+        AND comments.id = userComment.idComment";
         command.Parameters.AddWithValue("$idUser", userID);
         SqliteDataReader reader = command.ExecuteReader();
 
-        List<long> commentIDS = new List<long>();
+        List<Comment> comments = new List<Comment>();
         while (reader.Read())
         {
-            int commentId = int.Parse(reader.GetString(2));
-            commentIDS.Add(commentId);
+            string commenttext = reader.GetString(2);
+            string createdAt = reader.GetString(3);
+            Comment newcomment = new Comment(commenttext, createdAt);
+            newcomment.id = int.Parse(reader.GetString(1));
+            comments.Add(newcomment);
         }
 
         reader.Close();
         connection.Close();
         User user = GetByID(userID);
-        user.comments = commentIDS;
-        return commentIDS;
+        user.comments = comments;
+        return comments;
     }
-    public List<long> UserPosts(long userID)
+    public List<Post> UserPosts(long userID)
     {
         connection.Open();
  
         SqliteCommand command = connection.CreateCommand();
-        command.CommandText = @"SELECT * FROM userPost WHERE idUser = $idUser";
+        command.CommandText = @"SELECT userPost.idUser, posts.id, posts.post, posts.createdAt 
+        FROM userPost, posts WHERE userPost.idUser = $idUser
+        AND posts.id = userPost.idPost";
         command.Parameters.AddWithValue("$idUser", userID);
         SqliteDataReader reader = command.ExecuteReader();
 
-        List<long> postIDS = new List<long>();
+        List<Post> posts = new List<Post>();
         while (reader.Read())
         {
-            int postId = int.Parse(reader.GetString(2));
-            postIDS.Add(postId);
+            string postText = reader.GetString(2);
+            string createdAt = reader.GetString(3);
+            Post newpost = new Post(postText, createdAt);
+            newpost.id = int.Parse(reader.GetString(1));
+            posts.Add(newpost);
         }
 
         reader.Close();
         connection.Close();
         User user = GetByID(userID);
-        user.posts = postIDS;
-        return postIDS;
+        user.posts = posts;
+        return posts;
     }
     
     private long GetCount()

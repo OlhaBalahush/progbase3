@@ -100,7 +100,7 @@ public class CommentReposytory
         
         long newId = (long)command.ExecuteScalar();
         
-        user.comments.Add(comment.id);
+        user.comments.Add(comment);
         comment.userId = user.id;
         
         connection.Close();
@@ -122,7 +122,7 @@ public class CommentReposytory
         command.Parameters.AddWithValue("$idComment", comment.id);
         
         long newId = (long)command.ExecuteScalar();
-        post.commentIds.Add(comment.id);
+        post.comments.Add(comment);
         comment.postId = post.id;
         
         connection.Close();
@@ -213,7 +213,7 @@ public class CommentReposytory
             return false;
         }
         connection.Close();
-        user.comments.Remove(comment.id);
+        user.comments.Remove(comment);
         return true;
     }
     private bool DeleteSubscriptionWithPost(Comment comment, Post post)
@@ -232,7 +232,7 @@ public class CommentReposytory
             return false;
         }
         connection.Close();
-        post.commentIds.Remove(comment.id);
+        post.comments.Remove(comment);
         return true;
     }
     public int NumberOfCommentsFromTo(DateTime startDate, DateTime endDate)
@@ -254,15 +254,5 @@ public class CommentReposytory
         }
         connection.Close();
         return counter;
-    }
-    //xml
-    public List<Comment> GetListOfComment(List<long> commentIds)
-    {
-        List<Comment> comments = new List<Comment>();
-        foreach (long item in commentIds)
-        {
-            comments.Add(this.GetByID(item));
-        }
-        return comments;
     }
 }

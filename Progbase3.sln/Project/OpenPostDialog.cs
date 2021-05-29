@@ -33,8 +33,8 @@ public class OpenPostDialog: Dialog
         this.post = post;
         this.post.userId = postReposytory.UserID(post.id);
         this.user = userReposytory.GetByID(post.userId);
-        this.post.commentIds = postReposytory.CommentsOfPostID(this.post.id);
-        this.postComments = this.GetListOfComments(this.post.commentIds);
+        this.post.comments = postReposytory.CommentsOfPostID(this.post.id);
+        this.postComments = this.post.comments;
 
         this.Title = "Post";
         Button backBtn = new Button("Back");
@@ -155,8 +155,8 @@ public class OpenPostDialog: Dialog
                 // user.comments.Add(commnet.id);
                 // post.commentIds.Add(commnet.id);
                 this.user.comments = userReposytory.UserComments(user.id);
-                this.post.commentIds = postReposytory.CommentsOfPostID(post.id);
-                this.postComments = GetListOfComments(this.post.commentIds);
+                this.post.comments = postReposytory.CommentsOfPostID(post.id);
+                this.postComments = this.post.comments;
                 allCommentsToPostListView.SetSource(this.postComments);
                 UpdateCurrentPage();
             }
@@ -251,9 +251,8 @@ public class OpenPostDialog: Dialog
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
         this.user.comments = userReposytory.UserComments(user.id);
-        this.post.commentIds = postReposytory.CommentsOfPostID(postId);
-        this.postComments = GetListOfComments(this.post.commentIds);
-        allCommentsToPostListView.SetSource(this.postComments);
+        this.post.comments = postReposytory.CommentsOfPostID(postId);
+        allCommentsToPostListView.SetSource(this.post.comments);
         allCommentsToPostListView.SetSource(GetSearchPage());
         
         prevPageBtn.Visible = (currentpage != 1);
@@ -265,22 +264,22 @@ public class OpenPostDialog: Dialog
         {
             this.post = post;
             this.user = userReposytory.GetByID(post.userId);
-            this.postComments = GetListOfComments(post.commentIds);
+            this.postComments = this.post.comments;
         }
     }
-    private List<Comment> GetListOfComments(List<long> commentIds)
-    {
-        if(commentIds.Count != 0)
-        {
-            List<Comment> allcomments = new List<Comment>();
-            foreach (long item in commentIds)
-            {
-                allcomments.Add(commentReposytory.GetByID(item));
-            }
-            return allcomments;
-        }
-        return null;
-    }
+    // private List<Comment> GetListOfComments(List<long> commentIds)
+    // {
+    //     if(commentIds.Count != 0)
+    //     {
+    //         List<Comment> allcomments = new List<Comment>();
+    //         foreach (long item in commentIds)
+    //         {
+    //             allcomments.Add(commentReposytory.GetByID(item));
+    //         }
+    //         return allcomments;
+    //     }
+    //     return null;
+    // }
     private List<Comment> GetSearchPage()
     {
         if(this.postComments != null)
