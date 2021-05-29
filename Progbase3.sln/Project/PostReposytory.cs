@@ -54,7 +54,7 @@ public class PostReposytory
         post.commentIds = commentIDS;
         return commentIDS;
     }
-     private long GetCount()
+    private long GetCount()
         {
             connection.Open();
         

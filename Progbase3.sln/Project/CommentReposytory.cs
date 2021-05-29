@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using System;
+using System.Collections.Generic;
 public class CommentReposytory
 {
     private SqliteConnection connection;
@@ -7,7 +8,6 @@ public class CommentReposytory
     {
         this.connection = connection;
     }
-    
     public long UserID(long commentID)
     {
         connection.Open();
@@ -254,5 +254,15 @@ public class CommentReposytory
         }
         connection.Close();
         return counter;
+    }
+    //xml
+    public List<Comment> GetListOfComment(List<long> commentIds)
+    {
+        List<Comment> comments = new List<Comment>();
+        foreach (long item in commentIds)
+        {
+            comments.Add(this.GetByID(item));
+        }
+        return comments;
     }
 }
