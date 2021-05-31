@@ -4,36 +4,45 @@ using System.Collections.Generic;
 public class PostReposytory
 {
     private SqliteConnection connection;
+    private CommentReposytory commentReposytory;
     private int numberOfElementsOnPage = 5;
     public PostReposytory(SqliteConnection connection)
     {
         this.connection = connection;
     }
-    public long UserID(long postID)
+    public User User(long postID)
     {
         connection.Open();
  
         SqliteCommand command = connection.CreateCommand();
-        command.CommandText = @"SELECT * FROM userPost WHERE idPost = $idPost";
+        command.CommandText = @"SELECT userPost.idPost, users.id, users.username, users.moderator, users.createdAt , users.password
+        FROM userPost, users WHERE userPost.idPost = $idPost
+        AND userPost.idUser = users.id";
         command.Parameters.AddWithValue("$idPost", postID);
         SqliteDataReader reader = command.ExecuteReader();
 
         while (reader.Read())
         {
-            int userId = int.Parse(reader.GetString(1));
+            string username = reader.GetString(2);
+            int moderator = int.Parse(reader.GetString(3));
+            string createdAt = reader.GetString(4);
+            string password = reader.GetString(5);
+            User user = new User(username, moderator, password, createdAt);
+            user.id = int.Parse(reader.GetString(1));
             reader.Close();
             connection.Close();
             Post post = GetByID(postID);
-            post.userId = userId;
-            return userId;
+            post.user = user;
+            return user;
         }
 
         reader.Close();
         connection.Close();
-        return -1;
+        return null;
     }
-    public List<Comment> CommentsOfPostID(long postID)
+    public List<Comment> CommentsOfPost(long postID, CommentReposytory commentReposytory)
     {
+        this.commentReposytory = commentReposytory;
         connection.Open();
  
         SqliteCommand command = connection.CreateCommand();
@@ -50,12 +59,17 @@ public class PostReposytory
             string createdAt = reader.GetString(3);
             Comment newcomment = new Comment(commenttext, createdAt);
             newcomment.id= long.Parse(reader.GetString(1));
+            newcomment.postId = postID;
             comments.Add(newcomment);
         }
 
         reader.Close();
         connection.Close();
         Post post = GetByID(postID);
+        foreach (Comment item in comments)
+        {
+            item.userId = commentReposytory.UserID(item.id);
+        }
         post.comments = comments;
         return comments;
     }
@@ -148,12 +162,11 @@ public class PostReposytory
     public List<Post> GetSearchValue_1(string searchValue)
     {
         connection.Open();
+        List<Post> posts = new List<Post>();
 
         SqliteCommand command = connection.CreateCommand();
         command.CommandText = @"SELECT * FROM posts";
-
         SqliteDataReader reader = command.ExecuteReader();
-        List<Post> posts = new List<Post>();
         while(reader.Read())
         {
             string postText = reader.GetString(1);
@@ -211,7 +224,7 @@ public class PostReposytory
         command.Parameters.AddWithValue("$idPost", post.id);
         
         long newId = (long)command.ExecuteScalar();
-        post.userId = user.id;
+        post.user = user;
         user.posts.Add(post);
         
         connection.Close();
@@ -343,7 +356,7 @@ public class PostReposytory
         Post post = null;
         foreach (Post item in posts)
         {
-            List<Comment> comments = this.CommentsOfPostID(item.id);
+            List<Comment> comments = this.CommentsOfPost(item.id, this.commentReposytory);
             int numOfComments = comments.Count;
             if(numOfComments != 0 && numOfComments >= maxValue)
             {
@@ -353,7 +366,6 @@ public class PostReposytory
         }
         return post;
     }
-
 
     /*private bool DeleteAllCommentsToPost(Post post)
     {

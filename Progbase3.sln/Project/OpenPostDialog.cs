@@ -31,9 +31,9 @@ public class OpenPostDialog: Dialog
         this.postReposytory = postReposytory;
         this.commentReposytory = commentReposytory;
         this.post = post;
-        this.post.userId = postReposytory.UserID(post.id);
-        this.user = userReposytory.GetByID(post.userId);
-        this.post.comments = postReposytory.CommentsOfPostID(this.post.id);
+        this.post.user = postReposytory.User(post.id);
+        this.user = post.user;
+        this.post.comments = postReposytory.CommentsOfPost(this.post.id, this.commentReposytory);
         this.postComments = this.post.comments;
 
         this.Title = "Post";
@@ -155,7 +155,7 @@ public class OpenPostDialog: Dialog
                 // user.comments.Add(commnet.id);
                 // post.commentIds.Add(commnet.id);
                 this.user.comments = userReposytory.UserComments(user.id);
-                this.post.comments = postReposytory.CommentsOfPostID(post.id);
+                this.post.comments = postReposytory.CommentsOfPost(post.id, this.commentReposytory);
                 this.postComments = this.post.comments;
                 allCommentsToPostListView.SetSource(this.postComments);
                 UpdateCurrentPage();
@@ -251,7 +251,7 @@ public class OpenPostDialog: Dialog
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
         this.user.comments = userReposytory.UserComments(user.id);
-        this.post.comments = postReposytory.CommentsOfPostID(postId);
+        this.post.comments = postReposytory.CommentsOfPost(postId, this.commentReposytory);
         allCommentsToPostListView.SetSource(this.post.comments);
         allCommentsToPostListView.SetSource(GetSearchPage());
         
@@ -263,7 +263,7 @@ public class OpenPostDialog: Dialog
         if(post != null)
         {
             this.post = post;
-            this.user = userReposytory.GetByID(post.userId);
+            this.user = post.user;
             this.postComments = this.post.comments;
         }
     }

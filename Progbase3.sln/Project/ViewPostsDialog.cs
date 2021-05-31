@@ -134,7 +134,7 @@ public class ViewPostsDialog: Dialog
     private void OnOpenUser(ListViewItemEventArgs args)
     {
         Post post = (Post)args.Value;
-        User user = userReposytory.GetByID(post.userId);
+        User user = post.user;
         OpenPostDialog dialog = new OpenPostDialog(this.currentUser , post, this.userReposytory, this.postReposytory, this.commentReposytory);
 
         Application.Run(dialog);

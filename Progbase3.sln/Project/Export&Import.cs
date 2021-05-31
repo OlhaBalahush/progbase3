@@ -3,12 +3,8 @@ a.	експорту - з параметрами, що визначають да�
 Сформувати файл(и) експорту за варіантом.
 b.	імпорту - з параметром для файлу (директорії) з даними для імпорту. 
 Імпортовані дані додаються до БД за вимогами до імпорту.
-
-Експорт:
-Можна відфільтрувати пости по співпадінню тексту і експортувати всі знайдені пости з усіма їх коментарями у форматі XML
-Імпорт:
-Можна імпортувати експортовані пости і коментарі.
-
+Експорт: Можна відфільтрувати пости по співпадінню тексту і експортувати всі знайдені пости з усіма їх коментарями у форматі XML
+Імпорт: Можна імпортувати експортовані пости і коментарі.
 */
 using System.Xml.Serialization;
 using System.IO;
@@ -27,7 +23,13 @@ static class Export_Import
         XmlWriter writer = XmlWriter.Create(output, set);
         sr.Serialize(writer, posts);
     }
-    public static void Import(){}
+    public static List<Post> Import(string filename)
+    {
+        reader = new StreamReader(filename);
+        List<Post> posts = (List<Post>)sr.Deserialize(reader);
+        reader.Close();
+        return posts;
+    }
 }
 /*using System.Xml.Serialization;
 using System.IO;
@@ -38,15 +40,6 @@ static class De_Serialize
     private static XmlSerializer sr = new XmlSerializer(typeof(ListOfCustomers));
     private static ListOfCustomers customers;
     private static StreamReader reader;
-    public static void _Serialize(ListOfCustomers listOfCustomers, string filename)
-    {
-        StreamWriter output = new StreamWriter(filename);
-        XmlWriterSettings set = new XmlWriterSettings();
-        set.Indent = true;
-        set.NewLineHandling = NewLineHandling.Entitize;
-        XmlWriter writer = XmlWriter.Create(output, set);
-        sr.Serialize(writer, listOfCustomers);
-    }
     public static ListOfCustomers _Deserialize(string filename)
     {
         reader = new StreamReader(filename);

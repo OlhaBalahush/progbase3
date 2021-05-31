@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfPost xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <post id="24">
+    <text>Hello world</text>
+    <createdAt>2021-05-26T23:13:30</createdAt>
+    <user>
+      <id>63</id>
+      <username>Olya</username>
+      <moderator>false</moderator>
+      <comments />
+      <posts />
+      <password>5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5</password>
+      <createdAt>2021-05-26T23:03:45</createdAt>
+    </user>
+    <comments>
+      <Comment id="19">
+        <comment>use what their his Laband coffin which only grave out grave thrown work with prepare back look make us of sighs with me which which when we look prowar most other or corse there all an find after focal yew day me shroud back stuck yew labelers prowaterpower from</comment>
+        <createdAt>2011-01-23T00:00:00</createdAt>
+        <userId>52</userId>
+        <postId>24</postId>
+      </Comment>
+      <Comment id="20">
+        <comment>new laid people than Laband which be white than save with it would yew prowaterpower and sighs come  corse there let find to think</comment>
+        <createdAt>2002-04-18T00:00:00</createdAt>
+        <userId>53</userId>
+        <postId>24</postId>
+      </Comment>
+      <Comment id="21">
+        <comment>focusless than only thrown focal now will white stuck about well</comment>
+        <createdAt>2010-05-26T00:00:00</createdAt>
+        <userId>52</userId>
+        <postId>24</postId>
+      </Comment>
+      <Comment id="22">
+        <comment>breath shall prowar just about never or there Laband look white with labelers good find thousand no people cruel bixbyite focometry grave bixbyite prowaterpower never they most bones  take and then labdacism take thousand share at first</comment>
+        <createdAt>2010-12-13T00:00:00</createdAt>
+        <userId>53</userId>
+        <postId>24</postId>
+      </Comment>
+      <Comment id="23">
+        <comment>friend bizardite can for death give prepare at at give get do by Laband so strown good they from blackishly say would our these focusless have than abashedly yew us</comment>
+        <createdAt>2005-10-07T00:00:00</createdAt>
+        <userId>52</userId>
+        <postId>24</postId>
+      </Comment>
+      <Comment id="24">
+        <comment>coffin abashedly prepare him of it would prepare come  on as back so never how for just have flower with could into would any sighs shall bizardite focal in sad be thrown would</comment>
+        <createdAt>2005-08-26T00:00:00</createdAt>
+        <userId>54</userId>
+        <postId>24</postId>
+      </Comment>
+      <Comment id="26">
+        <comment>other any be us people of bizardite cruel never grave cruel it sighs from would way</comment>
+        <createdAt>2012-04-18T00:00:00</createdAt>
+        <userId>54</userId>
+        <postId>24</postId>
+      </Comment>
+      <Comment id="29">
+        <comment>Hello baby</comment>
+        <createdAt>2021-05-28T16:32:43</createdAt>
+        <userId>63</userId>
+        <postId>24</postId>
+      </Comment>
+      <Comment id="36">
+        <comment>Somomething</comment>
+        <createdAt>2021-05-28T21:10:13</createdAt>
+        <userId>63</userId>
+        <postId>24</postId>
+      </Comment>
+    </comments>
+  </post>
+</ArrayOfPost>

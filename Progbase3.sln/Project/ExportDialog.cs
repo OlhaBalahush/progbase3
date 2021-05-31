@@ -5,12 +5,14 @@ using System.Collections.Generic;
 public class ExportWindow: Dialog
 {
     public bool canceled;
-    private TextView searchText;
+    private TextField searchText;
     private TextField filename;
     private PostReposytory postReposytory;
-    public ExportWindow(PostReposytory postReposytory)
+    private CommentReposytory commentReposytory;
+    public ExportWindow(PostReposytory postReposytory, CommentReposytory commentReposytory)
     {
         this.postReposytory = postReposytory;
+        this.commentReposytory = commentReposytory;
         int rightColumnX = 20;
 
         Label fileNameLbl = new Label(2,4,"File name:");
@@ -23,11 +25,11 @@ public class ExportWindow: Dialog
         this.Add(fileNameLbl, filename);
 
         Label textSearchLbl = new Label(2,2,"Text:"); //TextField
-        searchText = new TextView()
+        searchText = new TextField("")
         {
             X = rightColumnX,
-            Y = Pos.Right(textSearchLbl),
-            Width = Dim.Fill(5),
+            Y = Pos.Top(textSearchLbl),
+            Width = 40,
         };
         this.Add(textSearchLbl, searchText);
 
@@ -45,16 +47,20 @@ public class ExportWindow: Dialog
         //перетворити у ліст по співпадінню
         //перевірити чи коректно введено назву файлу
         List<Post> posts = postReposytory.GetSearchValue_1(searchValue);
+        foreach (Post item in posts)
+        {
+            item.user = this.postReposytory.User(item.id);
+            item.comments = this.postReposytory.CommentsOfPost(item.id, this.commentReposytory);
+        }
         Export_Import.Export(posts, filename.Text.ToString());
+        Application.RequestStop();
     }
     private void OnCreateDialogCanceled()
     {
         this.canceled = true;
         Application.RequestStop();
     }
-
 }
-
 
 // using System;
 // using System.IO;

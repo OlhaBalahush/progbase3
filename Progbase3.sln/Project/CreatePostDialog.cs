@@ -49,7 +49,7 @@ public class CreatePostDialog: Dialog
         if(postText != null)
         {
             Post post = new Post(postText, DateTime.Now.ToString());
-            post.userId = this.user.id;
+            post.user = this.user;
             return post;
         }
         return null;

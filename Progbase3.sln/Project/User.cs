@@ -9,6 +9,7 @@ public class User
     public List<Post> posts;
     public string password;
     public DateTime createdAt;
+    public User(){}
     public User(string username, int moderator, string password, string createdAt)
     {
         this.username = username;

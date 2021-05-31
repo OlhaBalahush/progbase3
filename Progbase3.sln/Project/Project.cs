@@ -12,7 +12,7 @@ class Program
         for(int i = 0; i < 20; i++)
         {
             Post post = postReposytory.GetByID(i);
-            WriteLine(postReposytory.Delete(post, userReposytory.GetByID(post.userId)/*, commentReposytory*/ ));
+            WriteLine(postReposytory.Delete(post, post.user/*, commentReposytory*/ ));
             Comment comment = commentReposytory.GetByID(i);
             WriteLine(commentReposytory.Delete(comment, userReposytory.GetByID(comment.userId), postReposytory.GetByID(comment.postId)));
             

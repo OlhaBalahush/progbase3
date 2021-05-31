@@ -117,7 +117,7 @@ public class OpenProfileDialog: Dialog
     private void OnOpenPost(ListViewItemEventArgs args)
     {
         Post post = (Post)args.Value;
-        User user = userReposytory.GetByID(post.userId);
+        User user = post.user;
         OpenPostDialog dialog = new OpenPostDialog(this.currentUser, post, this.userReposytory, this.postReposytory, this.commentReposytory);
         //dialog.SetPost(post);
 

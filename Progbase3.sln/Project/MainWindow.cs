@@ -95,10 +95,14 @@ public class MainWindow: Window
     }
     private void OnExportClicked()
     {
-        ExportWindow dialog  = new ExportWindow(this.postReposytory);
+        ExportWindow dialog  = new ExportWindow(this.postReposytory, this.commentReposytory);
         Application.Run(dialog);
     }
-    private void OnImportClicked(){}
+    private void OnImportClicked()
+    {
+        ImportWindow dialog = new ImportWindow(this.postReposytory, this.commentReposytory, this.userReposytory);
+        Application.Run(dialog);
+    }
     private void OnAbout(){}
     private void OnExit()
     {
