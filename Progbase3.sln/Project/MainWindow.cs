@@ -1,5 +1,6 @@
 using System.Collections;
 using Terminal.Gui;
+using AccessDataLib;
 public class MainWindow: Window
 {
     private User user;
@@ -53,14 +54,14 @@ public class MainWindow: Window
     }
     private void OnProfileBtnClicked()
     {
-        OpenProfileDialog dialog = new OpenProfileDialog(this.user, this.userReposytory, this.postReposytory, this.commentReposytory);
+        OpenProfileDialog dialog = new OpenProfileDialog(this.user, this.user, this.userReposytory, this.postReposytory, this.commentReposytory);
         //dialog.SetUser(this.user, this.user.posts);
         Application.Run(dialog);
         this.user = dialog.GetUser();
         welcome.Text = $"Welcome, {this.user.username}";
         if(dialog.deleted)
         {
-            Authentication registration = new Authentication(this.top, userReposytory, postReposytory, commentReposytory);
+            AuthenticationWindow registration = new AuthenticationWindow(this.top, userReposytory, postReposytory, commentReposytory);
             Application.Top.Add(registration);
             Application.Run();
         }

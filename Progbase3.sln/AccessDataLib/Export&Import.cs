@@ -10,10 +10,9 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Collections.Generic;
 using System.Xml;
-using AccessDataLib;
-namespace Im_Export
+namespace AccessDataLib
 {
-    static class Export_Import
+    public static class Export_Import
     {
         private static XmlSerializer sr = new XmlSerializer(typeof(List<Post>));
         private static StreamReader reader;

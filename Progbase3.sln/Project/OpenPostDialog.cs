@@ -1,9 +1,11 @@
 using Terminal.Gui;
 using System.Collections;
 using System.Collections.Generic;
+using AccessDataLib;
 
 public class OpenPostDialog: Dialog
 {
+    public  bool pinnedcomment;
     public bool deleted;
     public bool updated = false;
     private UserReposytory userReposytory;
@@ -24,6 +26,7 @@ public class OpenPostDialog: Dialog
     private Label totalPagesLbl;
     private FrameView frameView;
     private Label noCommentLbl;
+    private Button pinBtn;
     public OpenPostDialog(User currentUser, Post post, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
     {
         this.currentUser = currentUser;
@@ -35,26 +38,47 @@ public class OpenPostDialog: Dialog
         this.user = post.user;
         this.post.comments = postReposytory.CommentsOfPost(this.post.id, this.commentReposytory);
         this.postComments = this.post.comments;
+        if(this.post.pinnedCommetId == -1)
+        {
+            this.pinnedcomment = false;
+        }
+        else
+        {
+            this.pinnedcomment = true;
+        }
 
         this.Title = "Post";
         Button backBtn = new Button("Back");
         backBtn.Clicked += OnCreateDialogSubmit;
         this.AddButton(backBtn);
 
-        if(this.user.id == this.currentUser.id)
-        {
-            editProfileBtn = new Button("Edit");
-            editProfileBtn.Clicked += OnEditPost;
-            this.AddButton(editProfileBtn);
-        }
-
+        editProfileBtn = new Button("Edit");
         Button deleteBtn = new Button("Delete")
         {
             X = Pos.Right(editProfileBtn),
             Y = Pos.Top(editProfileBtn),           
         };
-        deleteBtn.Clicked += OnPostDelete;
-        this.AddButton(deleteBtn);
+        pinBtn = new Button(2,22,"Pin comment");
+        if(this.user.id == this.currentUser.id)
+        {
+            editProfileBtn.Clicked += OnEditPost;
+            this.AddButton(editProfileBtn);
+
+            deleteBtn.Clicked += OnPostDelete;
+            this.AddButton(deleteBtn);
+
+            pinBtn.Clicked += OnPinComment;
+            this.AddButton(pinBtn);
+            if(this.pinnedcomment == false)
+            {
+                pinBtn.Visible = false;
+            }
+        }
+        else if(this.currentUser.moderator == true)
+        {
+            deleteBtn.Clicked += OnPostDelete;
+            this.AddButton(deleteBtn);
+        }
 
         int rightColumnX = 20;
         
@@ -118,7 +142,7 @@ public class OpenPostDialog: Dialog
             Width = Dim.Fill() - 4,
             Height = pageLength + 3,
         };
-        if(this.GetSearchPage() == null)
+        if(this.GetSearchPage().Count == 0)
         {
             frameView.Add(noCommentLbl);
         }
@@ -130,18 +154,46 @@ public class OpenPostDialog: Dialog
 
         Button createNewCommentBtn = new Button("Create new comment") // мб змінити розташування
         {
-            X = rightColumnX,
-            Y = Pos.Bottom(frameView),
+            X = Pos.Left(frameView),
+            Y = Pos.Bottom(frameView) + 2,
         };
         createNewCommentBtn.Clicked += OnCreateNewComment;
         this.AddButton(createNewCommentBtn);
 
         UpdateCurrentPage();
     }
+    private void OnPinComment()
+    {
+        if(pinnedcomment)
+        {
+            MessageBox.ErrorQuery("Error","Other comment pinned","ok");
+            return;
+        }
+        int commentindex = this.allCommentsToPostListView.SelectedItem;
+        if(commentindex == -1)
+        {
+            return;
+        }
+        if(this.post.pinnedCommetId != -1)
+        {
+            MessageBox.ErrorQuery("","Comment pinned","ok");
+            return;
+        }
+        Comment comment = (Comment)this.allCommentsToPostListView.Source.ToList()[commentindex];
+        comment.pinned = "pinned";
+        this.post.pinnedCommetId = comment.id;
+        bool updatepost = this.postReposytory.Update(this.post.id, this.post);
+        bool update = this.commentReposytory.Update(comment.id, comment);
+        this.post.comments = this.postReposytory.CommentsOfPost(this.post.id, this.commentReposytory);
+        this.post.comments.Remove(comment);
+        this.post.comments.Insert(0, comment);
+        this.pinnedcomment = true;
+        pinBtn.Visible = false;
+    }
     private void OnCreateNewComment()
     {
         CreateCommentDialog dialog = new CreateCommentDialog();
-        dialog.SetAutor_Post(this.user, this.post);
+        dialog.SetAutor_Comment(this.currentUser, this.post);
         Application.Run(dialog);
 
         if(!dialog.canceled)
@@ -151,7 +203,7 @@ public class OpenPostDialog: Dialog
                 Comment commnet = dialog.GetComment();
                 // Post post = postReposytory.GetByID(commnet.postId);
                 // User user = userReposytory.GetByID(commnet.userId);
-                this.commentReposytory.Insert(commnet, this.post, this.user);
+                this.commentReposytory.Insert(commnet, this.post, this.currentUser);
                 // user.comments.Add(commnet.id);
                 // post.commentIds.Add(commnet.id);
                 this.user.comments = userReposytory.UserComments(user.id);
@@ -216,6 +268,12 @@ public class OpenPostDialog: Dialog
             }
             
         }
+        if(dialog.unpinned)
+        {
+            this.post.pinnedCommetId = -1;
+            bool update = this.postReposytory.Update(this.post.id, this.post);
+            UpdateCurrentPage();
+        }
     }
     private void OnPreviousPage()
     {
@@ -252,11 +310,35 @@ public class OpenPostDialog: Dialog
         this.totalPagesLbl.Text = totalPages.ToString();
         this.user.comments = userReposytory.UserComments(user.id);
         this.post.comments = postReposytory.CommentsOfPost(postId, this.commentReposytory);
-        allCommentsToPostListView.SetSource(this.post.comments);
+        List<Comment> comments = postReposytory.CommentsOfPost(postId, this.commentReposytory);
+        this.postComments = Pinned(comments);
+        if(this.pinnedcomment == true || this.GetSearchPage().Count == 0)
+        {
+            pinBtn.Visible = false;// зробити кнопку прикріпити коментар невидимою
+        }
+        else
+        {
+            pinBtn.Visible = true;
+        }
+        //allCommentsToPostListView.SetSource(this.post.comments);
         allCommentsToPostListView.SetSource(GetSearchPage());
         
         prevPageBtn.Visible = (currentpage != 1);
         nextPageBtn.Visible = (currentpage != totalPages);
+    }
+    private List<Comment> Pinned(List<Comment> comments)
+    {
+        foreach (Comment item in comments)
+        {
+            if(item.pinned == "pinned")
+            {
+                comments.Remove(item);
+                this.pinnedcomment = true;
+                comments.Insert(0, item);
+                break;
+            }
+        }
+        return comments;
     }
     public void SetPost(Post post)
     {
@@ -267,19 +349,6 @@ public class OpenPostDialog: Dialog
             this.postComments = this.post.comments;
         }
     }
-    // private List<Comment> GetListOfComments(List<long> commentIds)
-    // {
-    //     if(commentIds.Count != 0)
-    //     {
-    //         List<Comment> allcomments = new List<Comment>();
-    //         foreach (long item in commentIds)
-    //         {
-    //             allcomments.Add(commentReposytory.GetByID(item));
-    //         }
-    //         return allcomments;
-    //     }
-    //     return null;
-    // }
     private List<Comment> GetSearchPage()
     {
         if(this.postComments != null)

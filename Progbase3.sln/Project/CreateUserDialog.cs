@@ -1,11 +1,12 @@
 using System;
 using Terminal.Gui;
+using AccessDataLib;
 public class CreateUserDialog: Dialog
 {
     protected bool update = false;
     public bool canceled;
     protected TextField usernameInput;
-    protected CheckBox moderatorCheck;
+    //protected CheckBox moderatorCheck;
     protected TextField passwordInput;
     public CreateUserDialog()
     {
@@ -30,16 +31,16 @@ public class CreateUserDialog: Dialog
         };
         this.Add(usernameLbl, usernameInput);
 
-        Label moderatorLbl = new Label(2,4,"Moderator");
-        moderatorCheck = new CheckBox ("")
-        {
-            X = rightColumnX,
-            Y = Pos.Top(moderatorLbl),
-            Width = 40,
-        };
-        this.Add(moderatorLbl, moderatorCheck);
+        // Label moderatorLbl = new Label(2,4,"Moderator");
+        // moderatorCheck = new CheckBox ("")
+        // {
+        //     X = rightColumnX,
+        //     Y = Pos.Top(moderatorLbl),
+        //     Width = 40,
+        // };
+        // this.Add(moderatorLbl, moderatorCheck);
 
-        Label passwordLbl = new Label(2,6,"Password");
+        Label passwordLbl = new Label(2,4,"Password");
         passwordInput = new TextField ("")
         {
             X = rightColumnX,
@@ -61,15 +62,12 @@ public class CreateUserDialog: Dialog
     public User GetUser()
     {
         string username = usernameInput.Text.ToString();
-        int moderator = 0;
-        if(moderatorCheck.Checked == true)
-        {
-            moderator = 1;
-        }
         string password = passwordInput.Text.ToString();
         if(username != "" && password != "")
         {
-            return new User(username, moderator, password, DateTime.Now.ToString());
+            User user = new User(username/*, moderator*/, password, DateTime.Now.ToString());
+            user.moderator = false;
+            return user;
         }
         return null;
     }

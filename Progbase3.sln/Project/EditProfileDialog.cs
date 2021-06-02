@@ -1,3 +1,4 @@
+using AccessDataLib;
 public class EditProfileDialog: CreateUserDialog
 {
     public EditProfileDialog()
@@ -5,7 +6,7 @@ public class EditProfileDialog: CreateUserDialog
         this.Title = "Edit profile";
         passwordInput.Text = "...";
         passwordInput.Visible = false;
-        moderatorCheck.Visible = false;
+        //moderatorCheck.Visible = false;
         update = true;
     }
     public void SetUser(User user)

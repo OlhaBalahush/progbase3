@@ -1,6 +1,7 @@
 using Terminal.Gui;
 using System.Collections;
 using System.Collections.Generic;
+using AccessDataLib;
 
 public class ViewUsersDialog: Dialog
 {
@@ -19,7 +20,8 @@ public class ViewUsersDialog: Dialog
     private Label noUserLbl;
     private int pageLength = 5;
     private int currentpage = 1;
-    private string searchValue = ""; // зробити серч
+    private string searchValue = "";
+    private TextField searchInput;
     public ViewUsersDialog(User current, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
     {
         this.userReposytory = userReposytory;
@@ -77,7 +79,7 @@ public class ViewUsersDialog: Dialog
             Width = Dim.Fill() - 4,
             Height = pageLength + 3,
         };
-        if(userReposytory.GetSearchPage(searchValue, currentpage, pageLength) == null)
+        if(userReposytory.GetSearchPage(searchValue, currentpage, pageLength).Count == 0)
         {
             frameView.Add(noUserLbl);
         }
@@ -87,7 +89,19 @@ public class ViewUsersDialog: Dialog
         }
         this.Add(frameView);
 
+        searchInput = new TextField(2,4,20,"");
+        searchInput.KeyPress += OnSearchEnter;
+        this.Add(searchInput);
+
         UpdateCurrentPage();
+    }
+    private void OnSearchEnter(KeyEventEventArgs args)
+    {
+        if(args.KeyEvent.Key == Key.Enter)
+        {
+            this.searchValue = this.searchInput.Text.ToString();
+            UpdateCurrentPage();
+        }
     }
     private void UpdateCurrentPage()
     {
@@ -134,7 +148,7 @@ public class ViewUsersDialog: Dialog
     private void OnOpenUser(ListViewItemEventArgs args)
     {
         User user = (User)args.Value;
-        OpenProfileDialog dialog = new OpenProfileDialog(user, this.userReposytory, this.postReposytory, this.commentReposytory);
+        OpenProfileDialog dialog = new OpenProfileDialog(this.currentUser ,user, this.userReposytory, this.postReposytory, this.commentReposytory);
 
         Application.Run(dialog);
 

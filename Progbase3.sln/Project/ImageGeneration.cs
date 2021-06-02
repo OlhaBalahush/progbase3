@@ -1,56 +1,151 @@
 using System;
 using System.Drawing;
 using ScottPlot;
-static class ImageGeneration
+using AccessDataLib;
+using System.Xml;
+using System.Xml.Linq;
+using System.Collections.Generic;
+using System.IO.Compression;
+using System.IO;
+// using System.Drawing;
+public class ImageGeneration
 {
-    public static void Graphic(int numberOfPosts, int numberOfcomments, int timeInterval) // timeInterval in day
+    private int year;
+    private string filenameimage = "graphic" + ".png";
+    private string filenamereport;
+    private User user;
+    private UserReposytory userReposytory;
+    private PostReposytory postReposytory;
+    private string [] months = new string[]{
+                "Jan", "Feb",
+                "Mar", "Apr",
+                "May", "Jun",
+                "Jul", "Aug",
+                "Sep", "Oct",
+                "Nov", "Dec",
+            };
+    public ImageGeneration(User user, UserReposytory userReposytory, PostReposytory postReposytory)
     {
+        this.user = user;
+        this.userReposytory = userReposytory;
+        this.postReposytory = postReposytory;
+    }
+    public void GraphicAndReport(int year/*, string filenameimage*/, string filenamereport)
+    {
+        string zipPath = @"./template.docx";
+        string extractPath = @"./template";
+        ZipFile.ExtractToDirectory(zipPath, extractPath);
+
+        this.filenamereport = filenamereport;
+        this.year = year;
         var plt = new ScottPlot.Plot(600, 400);
 
-        // create a series of dates
-        // int numberOfPosts = 5;
-        // int numberOfcomment = 5;
-        DateTime firstDay = new DateTime(2020, 1, 22);
-        DateTime firstDay_2 = new DateTime(2020, 1, 29);
-        DateTime firstDay_3 = new DateTime(2020, 2, 7);
-        DateTime firstDay_4 = new DateTime(2020, 2, 14);
-        DateTime firstDay_5 = new DateTime(2020, 2, 21);
+        int count = 12;
+        double[] xs = DataGen.Consecutive(count);
+        string[] currentmonths = months;
+        if(this.year < user.createdAt.Year || this.year > DateTime.Now.Year)
+        {
+            return; //doesn't have statistic
+        }
+        double[] posts = new double[count];
+        double[] comments = new double[count];
+        for(int i = 0; i < count; i++)
+        {
+            DateTime start = new DateTime(year, i + 1 ,1);
+            DateTime end;
+            if(i == 11)
+            {
+                end = new DateTime(year + 1, 1 , 1);
+            }
+            else
+            {
+                end = new DateTime(year, i + 2 ,1);
+            }
+            int numberOfPosts = userReposytory.NumberOfPostsFromTo(user.id, start, end).Count;
+            posts[i] = numberOfPosts;
+            int numberOfComments = userReposytory.NumberOfCommentsFromTo(user.id, start, end).Count;
+            comments[i] = numberOfComments;
+        }
+        plt.PlotScatter(xs, posts, label: "posts");
+        plt.PlotScatter(xs, comments, label: "comments");
+        plt.Legend();
+        plt.XTicks(xs, months);
 
+        plt.Title($"Statistics for {year.ToString()}");
 
-        double[] datesOfPosts = new double[numberOfPosts];
-        datesOfPosts[0] = firstDay.ToOADate();
-        datesOfPosts[1] = firstDay_2.ToOADate();
-        datesOfPosts[2] = firstDay_3.ToOADate();
-        datesOfPosts[3] = firstDay_4.ToOADate();
-        datesOfPosts[4] = firstDay_5.ToOADate();
-        // simulate data for each date
-        double[] valuesOfposts = new double[numberOfPosts];
-        Random rand = new Random(0);
-        for (int i = 1; i < numberOfPosts; i++)
-            valuesOfposts[i] = valuesOfposts[i - 1] + rand.NextDouble();
+        plt.SaveFig(filenameimage);
+        GenerationReport();
 
+        //?????
+        DeleteFiles(@"./template/_rels");
+        DeleteFiles(@"./template/docProps");
+        DeleteFiles(@"./template/word/_rels");
+        DeleteFiles(@"./template/word/media");
+        DeleteFiles(@"./template/word/theme");
+        DeleteFiles(@"./template/word");
+        DeleteFiles(@"./template");
+    }
+    static void DeleteFiles(string extractPath)
+    {
+        string[] files = Directory.GetFiles(extractPath);
+        foreach (string file in files)
+        {
+            File.Delete(file);
+        }
+        Directory.Delete(extractPath);  
+    }
+    public void GenerationReport()
+    {
+        XElement root = XElement.Load("./template/word/document.xml");
+        
+        FindAndReplace(root);
 
-        double[] datesOfComments = new double[numberOfPosts];
-        datesOfComments[0] = firstDay.AddDays(1).ToOADate();
-        datesOfComments[1] = firstDay_2.AddDays(1).ToOADate();
-        datesOfComments[2] = firstDay_3.AddDays(1).ToOADate();
-        datesOfComments[3] = firstDay_4.AddDays(1).ToOADate();
-        datesOfComments[4] = firstDay_5.AddDays(1).ToOADate();
-        double[] valuesOfComments = new double[numberOfcomments];
-        for (int i = 1; i < numberOfcomments; i++)
-            valuesOfComments[i] = valuesOfComments[i - 1] + rand.NextDouble();
+        Bitmap bmp = new Bitmap("./" + this.filenameimage);
+        bmp.Save("./template/word/media/image1.png");
 
-        plt.AddScatter(datesOfPosts, valuesOfposts);
-        plt.AddScatter(datesOfComments, valuesOfComments);
-        plt.XAxis.DateTimeFormat(true);
-
-        // define tick spacing as 1 day (every day will be shown)
-        plt.XAxis.ManualTickSpacing(7, ScottPlot.Ticks.DateTimeUnit.Day);
-        plt.XAxis.TickLabelStyle(rotation: 45);
-
-        // add some extra space for rotated ticks
-        plt.XAxis.SetSizeLimit(min: 50);
-
-        plt.SaveFig("ticks_definedDateTimeSpace.png");
+        root.Save("./template/word/document.xml", SaveOptions.DisableFormatting);
+        ZipFile.CreateFromDirectory("./template", this.filenamereport + ".docx");
+    }
+    private void FindAndReplace(XElement node)
+    {
+        DateTime startDate = new DateTime(this.year, 1, 1);
+        DateTime endDate = new DateTime(this.year + 1, 1, 1);
+        int numberOfAllPosts = userReposytory.NumberOfPostsFromTo(user.id, startDate, endDate).Count;
+        int numberOfAllComments = userReposytory.NumberOfCommentsFromTo(user.id, startDate, endDate).Count;
+        //Post post = postReposytory.PostWithTheMostCommentsDuringThisPeriod(userReposytory.NumberOfPostsFromTo(user.id, startDate, endDate), this.commentReposytory);
+        //plt.XLabel($"Start date: {startDate.ToString()}\nEnd date: {endDate.ToString()}\nNumber of posts during the interval: {numberOfAllPosts.ToString()}\nNumber of comments during the interval: {numberOfAllComments.ToString()}\nThe post with the most comments during this period:\n{post.ToString()}");
+        if (node.FirstNode != null
+            && node.FirstNode.NodeType == XmlNodeType.Text)
+        {
+            // замінити на інші дані
+            switch (node.Value)
+            {
+                case "start": node.Value = startDate.ToString(); break;
+                case "end": node.Value = endDate.ToString(); break;
+                case "posts": node.Value = numberOfAllPosts.ToString(); break;
+                case "comments": node.Value = numberOfAllComments.ToString(); break;
+                case "post": node.Value = "id = 7"; break;
+            }
+        }
+    
+        foreach (XElement el in node.Elements())
+        {
+            FindAndReplace(el);
+        }
     }
 }
+/*
+генерація звіту
+
+Дата початку
+Дата закінчення
+Кількість постів протягом проміжку
+Кількість коментарів протягом проміжку
+Пост з найбільшою кількістю коментарів в цей період
+Зображення з графіком	*/
+/*DateTime startDate = new DateTime(year, 1, 1);
+DateTime endDate = new DateTime(year, 12, 31);
+int numberOfAllPosts = userReposytory.NumberOfPostsFromTo(user.id, startDate, endDate).Count;
+int numberOfAllComments = userReposytory.NumberOfPostsFromTo(user.id, startDate, endDate).Count;
+Post post = postReposytory.PostWithTheMostCommentsDuringThisPeriod(userReposytory.NumberOfPostsFromTo(user.id, startDate, endDate), this.commentReposytory);
+plt.XLabel($"Start date: {startDate.ToString()}\nEnd date: {endDate.ToString()}\nNumber of posts during the interval: {numberOfAllPosts.ToString()}\nNumber of comments during the interval: {numberOfAllComments.ToString()}\nThe post with the most comments during this period:\n{post.ToString()}");*/

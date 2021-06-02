@@ -1,6 +1,7 @@
 using Terminal.Gui;
 using System.Collections;
 using System.Collections.Generic;
+using AccessDataLib;
 public class EditCommentDialog: CreateCommentDialog
 {
     public EditCommentDialog()

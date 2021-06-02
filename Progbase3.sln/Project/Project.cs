@@ -50,7 +50,7 @@ class Program
         Application.Init();
         Toplevel top = Application.Top;
 
-        Authentication registration = new Authentication(top, userReposytory, postReposytory, commentReposytory);
+        AuthenticationWindow registration = new AuthenticationWindow(top, userReposytory, postReposytory, commentReposytory);
         top.Add(registration);
 
         Application.Run();

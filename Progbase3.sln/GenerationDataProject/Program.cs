@@ -38,7 +38,15 @@ namespace GenerationDataProject
             int moderator = rand.Next(0,2);
             string password = "hfdgjfg"; //генерувати паролі???
             string createdtAt = GeneratorCreatedtAt();
-            User user = new User(username, moderator, password, createdtAt);
+            User user = new User(username/*, moderator*/, password, createdtAt);
+            if(moderator == 0)
+            {
+                user.moderator = false;
+            }
+            else
+            {
+                user.moderator = true;
+            }
             return user;
         }
         private string GeneratorCreatedtAt()

@@ -15,18 +15,18 @@ namespace AccessDataLib
         public string password;
         public DateTime createdAt;
         public User(){}
-        public User(string username, int moderator, string password, string createdAt)
+        public User(string username/*, int moderator*/, string password, string createdAt)
         {
             this.username = username;
             this.password = password;
-            if(moderator == 0)
-            {
-                this.moderator = false;
-            }
-            else
-            {
-                this.moderator = true;
-            }
+            // if(moderator == 0)
+            // {
+            //     this.moderator = false;
+            // }
+            // else
+            // {
+            //     this.moderator = true;
+            // }
             this.createdAt = DateTime.Parse(createdAt);
             comments = new List<Comment>();
             posts = new List<Post>();
@@ -49,8 +49,7 @@ namespace AccessDataLib
             connection.Open();
     
             SqliteCommand command = connection.CreateCommand();
-            // command.CommandText = @"SELECT * FROM userComment WHERE idUser = $idUser";
-            command.CommandText = @"SELECT userComment.idUser, comments.id, comments.comment, comments.createdAt 
+            command.CommandText = @"SELECT userComment.idUser, comments.id, comments.pinned, comments.comment, comments.createdAt 
             FROM userComment, comments WHERE userComment.idUser = $idUser
             AND comments.id = userComment.idComment";
             command.Parameters.AddWithValue("$idUser", userID);
@@ -60,9 +59,10 @@ namespace AccessDataLib
             while (reader.Read())
             {
                 string commenttext = reader.GetString(2);
-                string createdAt = reader.GetString(3);
+                string createdAt = reader.GetString(4);
                 Comment newcomment = new Comment(commenttext, createdAt);
                 newcomment.id = int.Parse(reader.GetString(1));
+                newcomment.pinned = reader.GetString(3);
                 comments.Add(newcomment);
             }
 
@@ -99,7 +99,33 @@ namespace AccessDataLib
             user.posts = posts;
             return posts;
         }
-        
+        public List<Post> NumberOfPostsFromTo(long userId, DateTime startDate, DateTime endDate)
+        {
+            List<Post> currentposts = this.UserPosts(userId);
+            List<Post> posts = new List<Post>();
+            foreach (Post item in currentposts)
+            {
+                if(item.createdAt >= startDate && item.createdAt < endDate)
+                {
+                    posts.Add(item);
+                }
+            }
+            return posts;
+        }
+        public List<Comment> NumberOfCommentsFromTo(long userId, DateTime startDate, DateTime endDate)
+        {
+            List<Comment> currentcomments = this.UserComments(userId);
+            List<Comment> comments = new List<Comment>();
+            foreach (Comment item in currentcomments)
+            {
+                if(item.createdAt >= startDate && item.createdAt < endDate)
+                {
+                    comments.Add(item);
+                }
+            }
+            return comments;
+        }
+
         private long GetCount()
             {
                 connection.Open();
@@ -151,11 +177,19 @@ namespace AccessDataLib
             while(reader.Read())
             {
                 string username = reader.GetString(1);
-                int moderator = int.Parse(reader.GetString(2));
+                // int moderator = int.Parse(reader.GetString(2));
                 string password = reader.GetString(4);
                 DateTime createdAt = DateTime.Parse(reader.GetString(3));
-                User user = new User(username, moderator, password, createdAt.ToString());
+                User user = new User(username, password, createdAt.ToString());
                 user.id = int.Parse(reader.GetString(0));
+                if(int.Parse(reader.GetString(2)) == 0)
+                {
+                    user.moderator = false;
+                }
+                else
+                {
+                    user.moderator = true;
+                }
                 users.Add(user);
             }
 
@@ -200,11 +234,19 @@ namespace AccessDataLib
 
             while (reader.Read())
             {
-                int moderator = int.Parse(reader.GetString(2));
+                // /int moderator = int.Parse(reader.GetString(2));
                 string createdAt = reader.GetString(3);
                 string password = reader.GetString(4);
-                User user = new User(username, moderator, password, createdAt);
+                User user = new User(username, password, createdAt);
                 user.id = int.Parse(reader.GetString(0));
+                if(int.Parse(reader.GetString(2)) == 0)
+                {
+                    user.moderator = false;
+                }
+                else
+                {
+                    user.moderator = true;
+                }
                 reader.Close();
             
                 connection.Close();
@@ -262,8 +304,16 @@ namespace AccessDataLib
                 int moderator = int.Parse(reader.GetString(2));
                 string createdAt = reader.GetString(3);
                 string password = reader.GetString(4);
-                User user = new User(username, moderator, password, createdAt);
+                User user = new User(username, password, createdAt);
                 user.id = int.Parse(reader.GetString(0));
+                if(int.Parse(reader.GetString(2)) == 0)
+                {
+                    user.moderator = false;
+                }
+                else
+                {
+                    user.moderator = true;
+                }
                 reader.Close();
             
                 connection.Close();
@@ -279,9 +329,17 @@ namespace AccessDataLib
             connection.Open();
     
             SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"UPDATE users SET username = $username WHERE id = $id";
+            command.CommandText = @"UPDATE users SET username = $username, moderator = $moderator WHERE id = $id";
             command.Parameters.AddWithValue("$id", userID);
             command.Parameters.AddWithValue("$username", newuser.username);
+            if(newuser.moderator == true)
+            {
+                command.Parameters.AddWithValue("$moderator", 1);
+            }
+            else
+            {
+                command.Parameters.AddWithValue("$moderator", 0);
+            }
             
             int nChanged = command.ExecuteNonQuery();
             
@@ -319,6 +377,8 @@ namespace AccessDataLib
         public long id;
         [XmlElement("text")]
         public string post;
+        [XmlElement("pinned comment")]
+        public long pinnedCommetId;
         [XmlElement("createdAt")]
         public DateTime createdAt;
         //[XmlElement("userId")]
@@ -330,7 +390,8 @@ namespace AccessDataLib
         {
             this.post = post;
             this.createdAt = DateTime.Parse(createdAt);
-            comments = new List<Comment>();
+            this.pinnedCommetId = -1;
+            this.comments = new List<Comment>();
         }
         public override string ToString()
         {
@@ -360,11 +421,19 @@ namespace AccessDataLib
             while (reader.Read())
             {
                 string username = reader.GetString(2);
-                int moderator = int.Parse(reader.GetString(3));
+                //int moderator = int.Parse(reader.GetString(3));
                 string createdAt = reader.GetString(4);
                 string password = reader.GetString(5);
-                User user = new User(username, moderator, password, createdAt);
+                User user = new User(username, password, createdAt);
                 user.id = int.Parse(reader.GetString(1));
+                if(int.Parse(reader.GetString(3)) == 0)
+                {
+                    user.moderator = false;
+                }
+                else
+                {
+                    user.moderator = true;
+                }
                 reader.Close();
                 connection.Close();
                 Post post = GetByID(postID);
@@ -382,7 +451,7 @@ namespace AccessDataLib
             connection.Open();
     
             SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"SELECT postComment.idPost, comments.id, comments.comment, comments.createdAt 
+            command.CommandText = @"SELECT postComment.idPost, comments.id, comments.comment, comments.pinned, comments.createdAt 
             FROM postComment, comments WHERE postComment.idPost = $idPost 
             AND comments.id = postComment.idComment";
             command.Parameters.AddWithValue("$idPost", postID);
@@ -392,19 +461,31 @@ namespace AccessDataLib
             while (reader.Read())
             {
                 string commenttext = reader.GetString(2);
-                string createdAt = reader.GetString(3);
+                string createdAt = reader.GetString(4);
                 Comment newcomment = new Comment(commenttext, createdAt);
                 newcomment.id= long.Parse(reader.GetString(1));
                 newcomment.postId = postID;
+                newcomment.pinned = reader.GetString(3);
                 comments.Add(newcomment);
             }
 
             reader.Close();
             connection.Close();
             Post post = GetByID(postID);
-            foreach (Comment item in comments)
+            if(comments.Count != 0)
             {
-                item.userId = commentReposytory.UserID(item.id);
+                foreach (Comment item in comments)
+                {
+                    long userId = commentReposytory.UserID(item.id);
+                    if(userId == -1)
+                    {
+                        comments.Remove(item);
+                    }
+                    else
+                    {
+                        item.userId = commentReposytory.UserID(item.id);
+                    }
+                }
             }
             post.comments = comments;
             return comments;
@@ -460,9 +541,10 @@ namespace AccessDataLib
             while(reader.Read())
             {
                 string postText = reader.GetString(1);
-                DateTime createdAt = DateTime.Parse(reader.GetString(2));
+                DateTime createdAt = DateTime.Parse(reader.GetString(3));
                 Post post = new Post(postText, createdAt.ToString());
                 post.id = int.Parse(reader.GetString(0));
+                post.pinnedCommetId = int.Parse(reader.GetString(2));
                 posts.Add(post);
             }
 
@@ -519,6 +601,22 @@ namespace AccessDataLib
             connection.Close();
             return posts;
         }
+        public Post PostWithTheMostCommentsDuringThisPeriod(List<Post> posts, CommentReposytory commentReposytory)
+        {
+            int maxValue = 0;
+            Post post = null;
+            foreach (Post item in posts)
+            {
+                List<Comment> comments = this.CommentsOfPost(item.id, commentReposytory);
+                int numOfComments = comments.Count;
+                if(numOfComments != 0 && numOfComments >= maxValue)
+                {
+                    maxValue = numOfComments;
+                    post = item;
+                }
+            }
+            return post;
+        }
 
         //CRUD
         public long Insert(Post post, User user)
@@ -528,13 +626,14 @@ namespace AccessDataLib
             SqliteCommand command = connection.CreateCommand();
             command.CommandText = 
             @"
-                INSERT INTO posts (post, createdAt) 
-                VALUES ($post, $createdAt);
+                INSERT INTO posts (post, pinned_commet, createdAt) 
+                VALUES ($post, $pinned_commet, $createdAt);
             
                 SELECT last_insert_rowid();
             ";
             command.Parameters.AddWithValue("$post", post.post);
             command.Parameters.AddWithValue("$createdAt", post.createdAt);
+            command.Parameters.AddWithValue("$pinned_commet", post.pinnedCommetId);
             
             long newId = (long)command.ExecuteScalar();
             post.id = newId;        
@@ -579,9 +678,10 @@ namespace AccessDataLib
             while (reader.Read())
             {
                 string postText = reader.GetString(1);
-                string createdAt = reader.GetString(2);
+                string createdAt = reader.GetString(3);
                 Post post = new Post(postText, createdAt);
                 post.id = int.Parse(reader.GetString(0));
+                post.pinnedCommetId = int.Parse(reader.GetString(2));
                 reader.Close();
             
                 connection.Close();
@@ -597,9 +697,10 @@ namespace AccessDataLib
             connection.Open();
     
             SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"UPDATE posts SET post = $post WHERE id = $id";
+            command.CommandText = @"UPDATE posts SET post = $post, pinned_commet = $pinned_commet WHERE id = $id";
             command.Parameters.AddWithValue("$id", postID);
             command.Parameters.AddWithValue("$post", newPost.post);
+            command.Parameters.AddWithValue("$pinned_commet", newPost.pinnedCommetId);
             
             int nChanged = command.ExecuteNonQuery();
             
@@ -660,48 +761,48 @@ namespace AccessDataLib
             //user.posts.Remove(postId);
             return true;
         }
-        public List<Post> NumberOfPostsFromTo(DateTime startDate, DateTime endDate)
-        {
-            connection.Open();
+        // public List<Post> NumberOfPostsFromTo(DateTime startDate, DateTime endDate)
+        // {
+        //     connection.Open();
                 
-            SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"SELECT * FROM posts";
+        //     SqliteCommand command = connection.CreateCommand();
+        //     command.CommandText = @"SELECT * FROM posts";
 
-            SqliteDataReader reader = command.ExecuteReader();
-            List<Post> posts = new List<Post>();
-            while (reader.Read())
-            {
-                DateTime createdat = DateTime.Parse(reader.GetString(2));
-                if(createdat >= startDate && createdat <= endDate)
-                {
-                    string postText = reader.GetString(1);
-                    string createdAt = reader.GetString(2);
-                    Post post = new Post(postText, createdAt);
-                    long id = long.Parse(reader.GetString(0));
-                    post.id = id;
-                    posts.Add(post);
-                }
-            }
-            connection.Close();
-            return posts;
-        }
-        public Post PostWithTheMostCommentsDuringThisPeriod(DateTime startDate, DateTime endDate)
-        {
-            List<Post> posts = this.NumberOfPostsFromTo(startDate, endDate);
-            int maxValue = 0;
-            Post post = null;
-            foreach (Post item in posts)
-            {
-                List<Comment> comments = this.CommentsOfPost(item.id, this.commentReposytory);
-                int numOfComments = comments.Count;
-                if(numOfComments != 0 && numOfComments >= maxValue)
-                {
-                    maxValue = numOfComments;
-                    post = item;
-                }
-            }
-            return post;
-        }
+        //     SqliteDataReader reader = command.ExecuteReader();
+        //     List<Post> posts = new List<Post>();
+        //     while (reader.Read())
+        //     {
+        //         DateTime createdat = DateTime.Parse(reader.GetString(2));
+        //         if(createdat >= startDate && createdat <= endDate)
+        //         {
+        //             string postText = reader.GetString(1);
+        //             string createdAt = reader.GetString(2);
+        //             Post post = new Post(postText, createdAt);
+        //             long id = long.Parse(reader.GetString(0));
+        //             post.id = id;
+        //             posts.Add(post);
+        //         }
+        //     }
+        //     connection.Close();
+        //     return posts;
+        // }
+        // public Post PostWithTheMostCommentsDuringThisPeriod(DateTime startDate, DateTime endDate)
+        // {
+        //     List<Post> posts = this.NumberOfPostsFromTo(startDate, endDate);
+        //     int maxValue = 0;
+        //     Post post = null;
+        //     foreach (Post item in posts)
+        //     {
+        //         List<Comment> comments = this.CommentsOfPost(item.id, this.commentReposytory);
+        //         int numOfComments = comments.Count;
+        //         if(numOfComments != 0 && numOfComments >= maxValue)
+        //         {
+        //             maxValue = numOfComments;
+        //             post = item;
+        //         }
+        //     }
+        //     return post;
+        // }
 
         /*private bool DeleteAllCommentsToPost(Post post)
         {
@@ -728,6 +829,8 @@ namespace AccessDataLib
     {
         [XmlAttribute()]
         public long id;
+        [XmlElement("pin")]
+        public string pinned;
         [XmlElement("comment")]
         public string comment;
         [XmlElement("createdAt")]
@@ -738,11 +841,12 @@ namespace AccessDataLib
         public Comment(string comment, string createdAt)
         {
             this.comment = comment;
+            this.pinned = "";
             this.createdAt = DateTime.Parse(createdAt);
         }
         public override string ToString()
         {
-            return $"{id} - {comment} \n\tcreated at: [{createdAt.ToString()}]";
+            return $"{this.id}|{this.pinned}| - {this.comment} \n\tcreated at: [{this.createdAt.ToString()}]";
         }
     }
     public class CommentReposytory
@@ -768,6 +872,8 @@ namespace AccessDataLib
                 connection.Close();
                 Comment comment = GetByID(commentID);
                 comment.userId = userId;
+                reader.Close();
+                connection.Close();
                 return userId;
             }
 
@@ -811,12 +917,13 @@ namespace AccessDataLib
             SqliteCommand command = connection.CreateCommand();
             command.CommandText = 
             @"
-                INSERT INTO comments (comment, createdAt) 
-                VALUES ($comment, $createdAt);
+                INSERT INTO comments (comment, pinned, createdAt) 
+                VALUES ($comment, $pinned, $createdAt);
             
                 SELECT last_insert_rowid();
             ";
             command.Parameters.AddWithValue("$comment", comment.comment);
+            command.Parameters.AddWithValue("$pinned", comment.pinned);
             command.Parameters.AddWithValue("$createdAt", comment.createdAt);
             
             long newId = (long)command.ExecuteScalar();
@@ -885,9 +992,10 @@ namespace AccessDataLib
             while (reader.Read())
             {
                 string commentText = reader.GetString(1);
-                string createdAt = reader.GetString(2);
+                string createdAt = reader.GetString(3);
                 Comment comment = new Comment(commentText, createdAt);
                 comment.id = int.Parse(reader.GetString(0));
+                comment.pinned = reader.GetString(2);
                 reader.Close();
             
                 connection.Close();
@@ -903,9 +1011,10 @@ namespace AccessDataLib
             connection.Open();
     
             SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"UPDATE comments SET comment = $comment WHERE id = $id";
+            command.CommandText = @"UPDATE comments SET comment = $comment, pinned = $pinned WHERE id = $id";
             command.Parameters.AddWithValue("$id", commentID);
             command.Parameters.AddWithValue("$comment", newComment.comment);
+            command.Parameters.AddWithValue("$pinned", newComment.pinned);
             
             int nChanged = command.ExecuteNonQuery();
             
@@ -979,26 +1088,26 @@ namespace AccessDataLib
             post.comments.Remove(comment);
             return true;
         }
-        public int NumberOfCommentsFromTo(DateTime startDate, DateTime endDate)
-        {
-            connection.Open();
+        // public int NumberOfCommentsFromTo(DateTime startDate, DateTime endDate)
+        // {
+        //     connection.Open();
                 
-            SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"SELECT * FROM comments";
+        //     SqliteCommand command = connection.CreateCommand();
+        //     command.CommandText = @"SELECT * FROM comments";
 
-            SqliteDataReader reader = command.ExecuteReader();
-            int counter = 0;
-            while (reader.Read())
-            {
-                DateTime createdAt = DateTime.Parse(reader.GetString(2));
-                if(createdAt >= startDate && createdAt <= endDate)
-                {
-                    counter++;
-                }
-            }
-            connection.Close();
-            return counter;
-        }
+        //     SqliteDataReader reader = command.ExecuteReader();
+        //     int counter = 0;
+        //     while (reader.Read())
+        //     {
+        //         DateTime createdAt = DateTime.Parse(reader.GetString(2));
+        //         if(createdAt >= startDate && createdAt <= endDate)
+        //         {
+        //             counter++;
+        //         }
+        //     }
+        //     connection.Close();
+        //     return counter;
+        // }
     }
 }
 //dsfkjhsd

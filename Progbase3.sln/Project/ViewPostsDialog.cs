@@ -1,6 +1,7 @@
 using Terminal.Gui;
 using System.Collections;
 using System.Collections.Generic;
+using AccessDataLib;
 
 public class ViewPostsDialog: Dialog
 {
@@ -19,7 +20,8 @@ public class ViewPostsDialog: Dialog
     private Label noPostLbl;
     private int pageLength = 5;
     private int currentpage = 1;
-    private string searchValue = ""; // зробити серч
+    private string searchValue = "";
+    private TextField searchInput;
     public ViewPostsDialog(User current, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
     {
         this.userReposytory = userReposytory;
@@ -46,7 +48,7 @@ public class ViewPostsDialog: Dialog
             Width = Dim.Fill(),
             Height = Dim.Fill(),
         };
-        allPostListView.OpenSelectedItem += OnOpenUser;
+        allPostListView.OpenSelectedItem += OnOpenPost;
         
         prevPageBtn = new Button(2,10,"Prev");
         prevPageBtn.Clicked += OnPreviousPage;
@@ -77,7 +79,7 @@ public class ViewPostsDialog: Dialog
             Width = Dim.Fill() - 4,
             Height = pageLength + 3,
         };
-        if(postReposytory.GetSearchPage(searchValue, currentpage, pageLength) == null)
+        if(postReposytory.GetSearchPage(searchValue, currentpage, pageLength).Count == 0)
         {
             frameView.Add(noPostLbl);
         }
@@ -87,7 +89,19 @@ public class ViewPostsDialog: Dialog
         }
         this.Add(frameView);
 
+        searchInput = new TextField(2,4,20,"");
+        searchInput.KeyPress += OnSearchEnter;
+        this.Add(searchInput);
+
         UpdateCurrentPage();
+    }
+    private void OnSearchEnter(KeyEventEventArgs args)
+    {
+        if(args.KeyEvent.Key == Key.Enter)
+        {
+            this.searchValue = this.searchInput.Text.ToString();
+            UpdateCurrentPage();
+        }
     }
     private void UpdateCurrentPage()
     {
@@ -131,7 +145,7 @@ public class ViewPostsDialog: Dialog
         this.currentpage++;
         UpdateCurrentPage();
     }
-    private void OnOpenUser(ListViewItemEventArgs args)
+    private void OnOpenPost(ListViewItemEventArgs args)
     {
         Post post = (Post)args.Value;
         User user = post.user;

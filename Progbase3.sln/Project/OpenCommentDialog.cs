@@ -1,9 +1,11 @@
 using Terminal.Gui;
 using System.Collections;
 using System.Collections.Generic;
+using AccessDataLib;
 
 public class OpenCommentDialog: Dialog
 {
+    public bool unpinned = false;
     public bool deleted;
     public bool updated = false;
     private UserReposytory userReposytory;
@@ -15,6 +17,7 @@ public class OpenCommentDialog: Dialog
     protected User currentUser;
     private TextView commentInput;
     private Button editCommentBtn;
+    private Button unpinnedBtn;
     public OpenCommentDialog(User current, Comment comment, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
     {
         this.userReposytory = userReposytory;
@@ -29,20 +32,32 @@ public class OpenCommentDialog: Dialog
         backBtn.Clicked += OnCreateDialogSubmit;
         this.AddButton(backBtn);
 
-        if(currentUser.id == user.id)
-        {
-            this.editCommentBtn = new Button("Edit");
-            editCommentBtn.Clicked += OnEditComment;
-            this.AddButton(editCommentBtn);
-        }
-
+        this.editCommentBtn = new Button("Edit");
         Button deleteBtn = new Button("Delete")
         {
             X = Pos.Right(editCommentBtn),
             Y = Pos.Top(editCommentBtn),       
         };
-        deleteBtn.Clicked += OnPostDelete;
-        this.AddButton(deleteBtn);
+        unpinnedBtn = new Button("Unpinned comment");
+        if(currentUser.id == user.id)
+        {
+            editCommentBtn.Clicked += OnEditComment;
+            this.AddButton(editCommentBtn);
+
+            deleteBtn.Clicked += OnPostDelete;
+            this.AddButton(deleteBtn);
+
+            if(this.comment.pinned == "pinned")
+            {
+                unpinnedBtn.Clicked += OnUnpinnedBtnDelete;
+                this.AddButton(unpinnedBtn);
+            }
+        }
+        else if(this.currentUser.moderator == true)
+        {
+            deleteBtn.Clicked += OnPostDelete;
+            this.AddButton(deleteBtn);
+        }
 
         int rightColumnX = 20;
         
@@ -62,7 +77,20 @@ public class OpenCommentDialog: Dialog
         this.Add(usernameLbl);
         Label createdAt = new Label(2,8,$"Created at: {this.comment.createdAt.ToString()}");
         this.Add(createdAt);
-    }    
+    }
+    private void OnUnpinnedBtnDelete()
+    {
+        this.unpinned = true;
+        this.comment.pinned = "";
+        bool update = this.commentReposytory.Update(this.comment.id, this.comment);
+        if(!update)
+        {
+            MessageBox.ErrorQuery("Error","Comment wasn't unpinned","ok");
+            return;
+        }
+        MessageBox.ErrorQuery("Message","Comment was unpinned","ok");
+        this.unpinnedBtn.Visible = false;
+    }
     public void SetComment(Comment comment)
     {
         if(comment != null)

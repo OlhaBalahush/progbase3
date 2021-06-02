@@ -1,5 +1,6 @@
 using System;
 using Terminal.Gui;
+using AccessDataLib;
 public class CreatePostDialog: Dialog
 {
     public bool canceled;
@@ -30,6 +31,7 @@ public class CreatePostDialog: Dialog
             Width = Dim.Fill(5),  // margin width
             Height = Dim.Percent(50),
             Text = "Some\r\ntest\r\nLast line!",
+            //TabWidth = 5,
         };
         this.Add(postLbl, postInput);
     }
@@ -46,6 +48,14 @@ public class CreatePostDialog: Dialog
     public Post GetPost()
     {
         string postText = postInput.Text.ToString();
+        // int maxLenght = 20; // кількість символів у рядку
+        // char [] ch = postText.ToCharArray();
+        // int j = 1;
+        // for(int i = 0; i < maxLenght; i++)
+        // {
+        //     if(ch[maxLenght * j] != 32)
+        //     {}
+        // }
         if(postText != null)
         {
             Post post = new Post(postText, DateTime.Now.ToString());
