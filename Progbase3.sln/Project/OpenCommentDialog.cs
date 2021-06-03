@@ -27,7 +27,7 @@ public class OpenCommentDialog: Dialog
         this.user = userReposytory.GetByID(comment.userId);
         this.currentUser = current;
 
-        this.Title = "Post";
+        this.Title = "Comment";
         Button backBtn = new Button("Back");
         backBtn.Clicked += OnCreateDialogSubmit;
         this.AddButton(backBtn);
