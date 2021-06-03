@@ -8,9 +8,9 @@ public class OpenCommentDialog: Dialog
     public bool unpinned = false;
     public bool deleted;
     public bool updated = false;
-    private UserReposytory userReposytory;
-    private PostReposytory postReposytory;
-    private CommentReposytory commentReposytory;
+    private UserRepository userRepository;
+    private PostRepository postRepository;
+    private CommentRepository commentRepository;
     protected Comment comment;
     protected User user;
     protected Post post;
@@ -18,13 +18,13 @@ public class OpenCommentDialog: Dialog
     private TextView commentInput;
     private Button editCommentBtn;
     private Button unpinnedBtn;
-    public OpenCommentDialog(User current, Comment comment, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+    public OpenCommentDialog(User current, Comment comment, UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository)
     {
-        this.userReposytory = userReposytory;
-        this.postReposytory = postReposytory;
-        this.commentReposytory = commentReposytory;
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
         this.comment = comment;
-        this.user = userReposytory.GetByID(comment.userId);
+        this.user = userRepository.GetByID(comment.userId);
         this.currentUser = current;
 
         this.Title = "Comment";
@@ -97,7 +97,7 @@ public class OpenCommentDialog: Dialog
     {
         this.unpinned = true;
         this.comment.pinned = "";
-        bool update = this.commentReposytory.Update(this.comment.id, this.comment);
+        bool update = this.commentRepository.Update(this.comment.id, this.comment);
         if(!update)
         {
             MessageBox.ErrorQuery("Error","Comment wasn't unpinned","ok");
@@ -111,8 +111,8 @@ public class OpenCommentDialog: Dialog
         if(comment != null)
         {
             this.comment = comment;
-            this.post = postReposytory.GetByID(comment.postId);
-            this.user = userReposytory.GetByID(comment.userId);
+            this.post = postRepository.GetByID(comment.postId);
+            this.user = userRepository.GetByID(comment.userId);
         }
     }
     public Comment GetComment()
@@ -134,7 +134,7 @@ public class OpenCommentDialog: Dialog
             this.updated = true;
             Comment updatedcomment = dialog.GetComment();
             this.SetComment(updatedcomment);
-            bool result = commentReposytory.Update(this.post.id, updatedcomment);
+            bool result = commentRepository.Update(this.post.id, updatedcomment);
             if(result)
             {
                 this.comment.comment = updatedcomment.comment;

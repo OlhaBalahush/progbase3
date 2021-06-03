@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 namespace AccessDataLib
 {
-    public class UserReposytory
+    public class UserRepository
     {
         private SqliteConnection connection;
         private int numberOfElementsOnPage = 5;
-        public UserReposytory(SqliteConnection connection)
+        public UserRepository(SqliteConnection connection)
         {
             this.connection = connection;
         }

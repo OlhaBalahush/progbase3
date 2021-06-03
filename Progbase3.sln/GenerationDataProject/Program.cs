@@ -20,9 +20,9 @@ namespace GenerationDataProject
             string databaseFileName = "C:/Users/Olha/Desktop/progbase3/data/socialNetwork.db";
             SqliteConnection connection = new SqliteConnection($"Data Source={databaseFileName}");
 
-            UserReposytory userReposytory = new UserReposytory(connection);
-            PostReposytory postReposytory = new PostReposytory(connection);
-            CommentReposytory commentReposytory = new CommentReposytory(connection);
+            UserRepository userRepository = new UserRepository(connection);
+            PostRepository postRepository = new PostRepository(connection);
+            CommentRepository commentRepository = new CommentRepository(connection);
 
             while(true)
             {
@@ -46,13 +46,13 @@ namespace GenerationDataProject
                             for(int i = 0; i < int.Parse(com[1]);i++)
                             {
                                 User user = generator.GeneratorUser();
-                                Authentication.SignUp(userReposytory, user);
+                                Authentication.SignUp(userRepository, user);
                             }
                         }
                         // generate 5 posts by user 3
                         else if(com.Length == 6 && com[0] == "generate" && IsNumber(com[1]) && com[2] == "posts" && com[3] == "by" && com[4] == "user" && IsNumber(com[5]))
                         {
-                            User user = userReposytory.GetByID(int.Parse(com[5]));
+                            User user = userRepository.GetByID(int.Parse(com[5]));
                             if(user == null)
                             {
                                 Console.Error.WriteLine("incoorect entered user id");
@@ -61,14 +61,14 @@ namespace GenerationDataProject
                             for(int i = 0; i < int.Parse(com[1]); i++)
                             {
                                 Post post = generator.GeneratorPost();;
-                                long postId = postReposytory.Insert(post, user);
+                                long postId = postRepository.Insert(post, user);
                             }
                         }
                         // generate 5 comments to post 2 by user 3
                         else if(com.Length == 9 && com[0] == "generate" && IsNumber(com[1]) && com[2] == "comments" && com[3] == "to" && com[4] == "post" && IsNumber(com[5]) && com[6] == "by" && com[7] == "user" && IsNumber(com[8]))
                         {
-                            Post post = postReposytory.GetByID(int.Parse(com[5]));
-                            User user = userReposytory.GetByID(int.Parse(com[8]));
+                            Post post = postRepository.GetByID(int.Parse(com[5]));
+                            User user = userRepository.GetByID(int.Parse(com[8]));
                             if(post == null)
                             {
                                 Console.Error.WriteLine("incoorect entered post id");
@@ -82,7 +82,7 @@ namespace GenerationDataProject
                             for(int i = 0; i < int.Parse(com[1]); i++)
                             {
                                 Comment comment = generator.GeneratorComment();
-                                long commentId = commentReposytory.Insert(comment, post, user);
+                                long commentId = commentRepository.Insert(comment, post, user);
                             }
                         }
                         else

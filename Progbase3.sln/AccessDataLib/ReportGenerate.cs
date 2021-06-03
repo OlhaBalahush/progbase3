@@ -13,9 +13,9 @@ namespace AccessDataLib
         private string filenameimage = "graphic" + ".png";
         private string filenamereport;
         private User user;
-        private UserReposytory userReposytory;
-        private PostReposytory postReposytory;
-        private CommentReposytory commentReposytory;
+        private UserRepository userReposytory;
+        private PostRepository postReposytory;
+        private CommentRepository commentReposytory;
         private string [] months = new string[]{
                     "Jan", "Feb",
                     "Mar", "Apr",
@@ -24,7 +24,7 @@ namespace AccessDataLib
                     "Sep", "Oct",
                     "Nov", "Dec",
                 };
-        public ImageGeneration(User user, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+        public ImageGeneration(User user, UserRepository userReposytory, PostRepository postReposytory, CommentRepository commentReposytory)
         {
             this.user = user;
             this.userReposytory = userReposytory;

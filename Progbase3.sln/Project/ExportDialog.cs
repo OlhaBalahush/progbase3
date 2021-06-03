@@ -7,12 +7,12 @@ public class ExportWindow: Dialog
     public bool canceled;
     private TextField searchText;
     private TextField filename;
-    private PostReposytory postReposytory;
-    private CommentReposytory commentReposytory;
-    public ExportWindow(PostReposytory postReposytory, CommentReposytory commentReposytory)
+    private PostRepository postRepository;
+    private CommentRepository commentRepository;
+    public ExportWindow(PostRepository postRepository, CommentRepository commentRepository)
     {
-        this.postReposytory = postReposytory;
-        this.commentReposytory = commentReposytory;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
         
         int rightColumnX = 20;
         this.Title = "Export";
@@ -51,11 +51,11 @@ public class ExportWindow: Dialog
             filepath += ".xml";
         }
         string searchValue = this.searchText.Text.ToString();
-        List<Post> posts = postReposytory.GetSearchValue(null, searchValue, -1);
+        List<Post> posts = postRepository.GetSearchValue(null, searchValue, -1);
         foreach (Post item in posts)
         {
-            item.user = this.postReposytory.User(item.id);
-            item.comments = this.postReposytory.CommentsOfPost(item.id, this.commentReposytory);
+            item.user = this.postRepository.User(item.id);
+            item.comments = this.postRepository.CommentsOfPost(item.id, this.commentRepository);
         }
         Export_Import.Export(posts, filepath);
         Application.RequestStop();

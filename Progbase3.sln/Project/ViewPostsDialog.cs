@@ -5,9 +5,9 @@ using AccessDataLib;
 
 public class ViewPostsDialog: Dialog
 {
-    private UserReposytory userReposytory;
-    private PostReposytory postReposytory;
-    private CommentReposytory commentReposytory;
+    private UserRepository userRepository;
+    private PostRepository postRepository;
+    private CommentRepository commentRepository;
     protected User currentUser;
     private ListView allPostListView;
     private Button prevPageBtn;
@@ -20,11 +20,11 @@ public class ViewPostsDialog: Dialog
     private int currentpage = 1;
     private string searchValue = "";
     private TextField searchInput;
-    public ViewPostsDialog(User current, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+    public ViewPostsDialog(User current, UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository)
     {
-        this.userReposytory = userReposytory;
-        this.postReposytory = postReposytory;
-        this.commentReposytory = commentReposytory;
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
         this.currentUser = current;
 
         this.Title = "All posts";
@@ -74,7 +74,7 @@ public class ViewPostsDialog: Dialog
             Width = Dim.Fill() - 4,
             Height = pageLength + 3,
         };
-        if(postReposytory.GetSearchPage(null, searchValue, currentpage, pageLength).Count == 0)
+        if(postRepository.GetSearchPage(null, searchValue, currentpage, pageLength).Count == 0)
         {
             frameView.Add(noPostLbl);
         }
@@ -100,7 +100,7 @@ public class ViewPostsDialog: Dialog
     }
     private void UpdateCurrentPage()
     {
-        int totalPages = postReposytory.NumberOfPages(null, this.searchValue, this.pageLength);
+        int totalPages = postRepository.NumberOfPages(null, this.searchValue, this.pageLength);
         if(totalPages == 0)
         {
             totalPages = 1;
@@ -111,7 +111,7 @@ public class ViewPostsDialog: Dialog
         }
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
-        allPostListView.SetSource(postReposytory.GetSearchPage(null, searchValue,  currentpage, this.pageLength));
+        allPostListView.SetSource(postRepository.GetSearchPage(null, searchValue,  currentpage, this.pageLength));
         
         prevPageBtn.Visible = (currentpage != 1);
         nextPageBtn.Visible = (currentpage != totalPages);
@@ -127,7 +127,7 @@ public class ViewPostsDialog: Dialog
     }
     private void OnNextPage()
     {
-        int totalPages = postReposytory.NumberOfPages(null, this.searchValue, this.pageLength);
+        int totalPages = postRepository.NumberOfPages(null, this.searchValue, this.pageLength);
         if(currentpage >= totalPages)
         {
             return;
@@ -139,16 +139,16 @@ public class ViewPostsDialog: Dialog
     {
         Post post = (Post)args.Value;
         User user = post.user;
-        OpenPostDialog dialog = new OpenPostDialog(this.currentUser , post, this.userReposytory, this.postReposytory, this.commentReposytory);
+        OpenPostDialog dialog = new OpenPostDialog(this.currentUser , post, this.userRepository, this.postRepository, this.commentRepository);
 
         Application.Run(dialog);
 
         if(dialog.deleted)
         {
-            bool result = postReposytory.Delete(post, user);
+            bool result = postRepository.Delete(post, user);
             if(result)
             {
-                int pages = postReposytory.NumberOfPages(null, searchValue, pageLength);
+                int pages = postRepository.NumberOfPages(null, searchValue, pageLength);
                 if(currentpage > pages && pageLength > 1)
                 {
                     pages--;
@@ -156,7 +156,7 @@ public class ViewPostsDialog: Dialog
                 }
                 this.UpdateCurrentPage();
                 //this.users = 
-                allPostListView.SetSource(postReposytory.PostsOnPage(null, currentpage));
+                allPostListView.SetSource(postRepository.PostsOnPage(null, currentpage));
             }
             else
             {
@@ -167,10 +167,10 @@ public class ViewPostsDialog: Dialog
         {
             if(dialog.GetPost() != null)
             {
-                bool result = postReposytory.Update(post.id, dialog.GetPost());
+                bool result = postRepository.Update(post.id, dialog.GetPost());
                 if(result)
                 {
-                    allPostListView.SetSource(postReposytory.PostsOnPage(null, currentpage));
+                    allPostListView.SetSource(postRepository.PostsOnPage(null, currentpage));
                     this.UpdateCurrentPage();
                 }
                 else

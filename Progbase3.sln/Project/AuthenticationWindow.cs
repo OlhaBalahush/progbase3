@@ -6,19 +6,19 @@ using System.Text;
 using AccessDataLib;
 public class AuthenticationWindow: Window
 {
-    private UserReposytory userReposytory;
-    private PostReposytory postReposytory;
-    private CommentReposytory commentReposytory;
+    private UserRepository userRepository;
+    private PostRepository postRepository;
+    private CommentRepository commentRepository;
     protected TextField usernameInput;
     protected TextField passwordInput;
     private Toplevel top;
     private User user;
-    public AuthenticationWindow(Toplevel top, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+    public AuthenticationWindow(Toplevel top, UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository)
     {
         this.top = top;
-        this.userReposytory = userReposytory;
-        this.postReposytory = postReposytory;
-        this.commentReposytory = commentReposytory;
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
         this.Title = "";
         Rect frame = new Rect(0, 0, top.Frame.Width, top.Frame.Height);
 
@@ -68,7 +68,7 @@ public class AuthenticationWindow: Window
     }
     private void OnLogInBtnClicked()
     {
-        User user = Authentication.LogIn(this.userReposytory, usernameInput.Text.ToString(), passwordInput.Text.ToString());
+        User user = Authentication.LogIn(this.userRepository, usernameInput.Text.ToString(), passwordInput.Text.ToString());
         if(user == null)
         {
             MessageBox.ErrorQuery("Incorrect entered data","try again or sign up","Ok");
@@ -90,7 +90,7 @@ public class AuthenticationWindow: Window
             {
                 this.user = dialog.GetUser();
                 //sign up
-                Authentication.SignUp(this.userReposytory, this.user);
+                Authentication.SignUp(this.userRepository, this.user);
                 if(user == null)
                 {
                     MessageBox.ErrorQuery("Error","User with such a username already exists, please try again","Ok");
@@ -109,7 +109,7 @@ public class AuthenticationWindow: Window
     {
         Application.Init();
 
-        MainWindow window = new MainWindow(this.top, this.user, this.userReposytory, this.postReposytory, this.commentReposytory);
+        MainWindow window = new MainWindow(this.top, this.user, this.userRepository, this.postRepository, this.commentRepository);
         Application.Top.Add(window);
 
         Application.Run();

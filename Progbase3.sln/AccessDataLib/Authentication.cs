@@ -4,7 +4,7 @@ namespace AccessDataLib
 {
     public static class Authentication
     {
-        public static User SignUp(UserReposytory userReposytory, User user)
+        public static User SignUp(UserRepository userReposytory, User user)
         {
             if(userReposytory.GetByUsername(user.username) != null)
             {
@@ -14,7 +14,7 @@ namespace AccessDataLib
             user.id = userReposytory.Insert(user);
             return user;
         }
-        public static User LogIn(UserReposytory userReposytory, string username, string password)
+        public static User LogIn(UserRepository userReposytory, string username, string password)
         {
             if(username == "" || password == "")
             {

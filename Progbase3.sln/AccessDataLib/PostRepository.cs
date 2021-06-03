@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using Microsoft.Data.Sqlite;
 namespace AccessDataLib
 {
-    public class PostReposytory
+    public class PostRepository
     {
         private SqliteConnection connection;
         private int numberOfElementsOnPage = 5;
-        public PostReposytory(SqliteConnection connection)
+        public PostRepository(SqliteConnection connection)
         {
             this.connection = connection;
         }
@@ -50,7 +50,7 @@ namespace AccessDataLib
             connection.Close();
             return null;
         }
-        public List<Comment> CommentsOfPost(long postID, CommentReposytory commentReposytory)
+        public List<Comment> CommentsOfPost(long postID, CommentRepository commentReposytory)
         {
             connection.Open();
     
@@ -247,7 +247,7 @@ namespace AccessDataLib
             return posts;
         }
         // метод для генерації звіту
-        public Post PostWithTheMostCommentsDuringThisPeriod(List<Post> posts, CommentReposytory commentReposytory)
+        public Post PostWithTheMostCommentsDuringThisPeriod(List<Post> posts, CommentRepository commentReposytory)
         {
             int maxValue = 0;
             Post post = null;

@@ -5,11 +5,9 @@ using AccessDataLib;
 
 public class ViewUsersDialog: Dialog
 {
-    // public bool deleted;
-    // public bool updated = false;
-    private UserReposytory userReposytory;
-    private PostReposytory postReposytory;
-    private CommentReposytory commentReposytory;
+    private UserRepository userRepository;
+    private PostRepository postRepository;
+    private CommentRepository commentRepository;
     protected User currentUser;
     private ListView allUserListView;
     private Button prevPageBtn;
@@ -22,19 +20,17 @@ public class ViewUsersDialog: Dialog
     private int currentpage = 1;
     private string searchValue = "";
     private TextField searchInput;
-    public ViewUsersDialog(User current, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+    public ViewUsersDialog(User current, UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository)
     {
-        this.userReposytory = userReposytory;
-        this.postReposytory = postReposytory;
-        this.commentReposytory = commentReposytory;
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
         this.currentUser = current;
 
         this.Title = "All Users";
         Button backBtn = new Button("Back");
         backBtn.Clicked += OnCreateDialogSubmit;
         this.AddButton(backBtn);
-
-        //int rightColumnX = 20;
 
         noUserLbl = new Label("No user")
         {
@@ -78,7 +74,7 @@ public class ViewUsersDialog: Dialog
             Width = Dim.Fill() - 4,
             Height = pageLength + 3,
         };
-        if(userReposytory.GetSearchPage(searchValue, currentpage, pageLength).Count == 0)
+        if(userRepository.GetSearchPage(searchValue, currentpage, pageLength).Count == 0)
         {
             frameView.Add(noUserLbl);
         }
@@ -104,7 +100,7 @@ public class ViewUsersDialog: Dialog
     }
     private void UpdateCurrentPage()
     {
-        int totalPages = userReposytory.NumberOfPages(this.searchValue, this.pageLength);
+        int totalPages = userRepository.NumberOfPages(this.searchValue, this.pageLength);
         if(totalPages == 0)
         {
             totalPages = 1;
@@ -115,12 +111,7 @@ public class ViewUsersDialog: Dialog
         }
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
-
-        // this.user.comments = userReposytory.UserComments(user.id);
-        // this.post.commentIds = postReposytory.CommentsOfPostID(postId);
-        // this.postComments = GetListOfComments(this.post.commentIds);
-        // allCommentsToPostListView.SetSource(this.postComments);
-        allUserListView.SetSource(userReposytory.GetSearchPage(searchValue,  currentpage, this.pageLength));
+        allUserListView.SetSource(userRepository.GetSearchPage(searchValue,  currentpage, this.pageLength));
         
         prevPageBtn.Visible = (currentpage != 1);
         nextPageBtn.Visible = (currentpage != totalPages);
@@ -136,7 +127,7 @@ public class ViewUsersDialog: Dialog
     }
     private void OnNextPage()
     {
-        int totalPages = userReposytory.NumberOfPages(this.searchValue, this.pageLength);
+        int totalPages = userRepository.NumberOfPages(this.searchValue, this.pageLength);
         if(currentpage >= totalPages)
         {
             return;
@@ -147,16 +138,16 @@ public class ViewUsersDialog: Dialog
     private void OnOpenUser(ListViewItemEventArgs args)
     {
         User user = (User)args.Value;
-        OpenProfileDialog dialog = new OpenProfileDialog(this.currentUser ,user, this.userReposytory, this.postReposytory, this.commentReposytory);
+        OpenProfileDialog dialog = new OpenProfileDialog(this.currentUser ,user, this.userRepository, this.postRepository, this.commentRepository);
 
         Application.Run(dialog);
 
         if(dialog.deleted)
         {
-            bool result = userReposytory.Delete(user.id);
+            bool result = userRepository.Delete(user.id);
             if(result)
             {
-                int pages = userReposytory.NumberOfPages(searchValue, pageLength);
+                int pages = userRepository.NumberOfPages(searchValue, pageLength);
                 if(currentpage > pages && pageLength > 1)
                 {
                     pages--;
@@ -164,7 +155,7 @@ public class ViewUsersDialog: Dialog
                 }
                 this.UpdateCurrentPage();
                 //this.users = 
-                allUserListView.SetSource(userReposytory.UserssOnPage(currentpage));
+                allUserListView.SetSource(userRepository.UserssOnPage(currentpage));
             }
             else
             {
@@ -175,12 +166,10 @@ public class ViewUsersDialog: Dialog
         {
             if(dialog.GetUser() != null)
             {
-                bool result = userReposytory.Update(user.id, dialog.GetUser());
+                bool result = userRepository.Update(user.id, dialog.GetUser());
                 if(result)
                 {
-                    // this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
-                    // this.userPosts = GetListOfPosts(this.currentUser.posts);
-                    allUserListView.SetSource(userReposytory.UserssOnPage(currentpage));
+                    allUserListView.SetSource(userRepository.UserssOnPage(currentpage));
                     this.UpdateCurrentPage();
                 }
                 else

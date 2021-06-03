@@ -6,14 +6,14 @@ public class ImportWindow: Dialog
 {
     public bool canceled;
     private TextField filename;
-    private PostReposytory postReposytory;
-    private CommentReposytory commentReposytory;
-    private UserReposytory userReposytory;
-    public ImportWindow(PostReposytory postReposytory, CommentReposytory commentReposytory, UserReposytory userReposytory)
+    private PostRepository postRepository;
+    private CommentRepository commentRepository;
+    private UserRepository userRepository;
+    public ImportWindow(PostRepository postRepository, CommentRepository commentRepository, UserRepository userRepository)
     {
-        this.postReposytory = postReposytory;
-        this.commentReposytory = commentReposytory;
-        this.userReposytory = userReposytory;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+        this.userRepository = userRepository;
 
         int rightColumnX = 20;
         this.Title = "Import";
@@ -49,10 +49,10 @@ public class ImportWindow: Dialog
         {
             foreach (Post item in posts)
             {
-                postReposytory.Insert(item, item.user);
+                postRepository.Insert(item, item.user);
                 foreach (Comment comment in item.comments)
                 {
-                    commentReposytory.Insert(comment, item, this.userReposytory.GetByID(comment.userId));
+                    commentRepository.Insert(comment, item, this.userRepository.GetByID(comment.userId));
                 }
             }
             Application.RequestStop();

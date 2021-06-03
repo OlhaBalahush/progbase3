@@ -8,9 +8,9 @@ public class OpenPostDialog: Dialog
     public  bool pinnedcomment;
     public bool deleted;
     public bool updated = false;
-    private UserReposytory userReposytory;
-    private PostReposytory postReposytory;
-    private CommentReposytory commentReposytory;
+    private UserRepository userRepository;
+    private PostRepository postRepository;
+    private CommentRepository commentRepository;
     private List<Comment> postComments;
     private string searchValue = "";
     private int pageLength = 5;
@@ -28,16 +28,16 @@ public class OpenPostDialog: Dialog
     private FrameView frameView;
     private Label noCommentLbl;
     private Button pinBtn;
-    public OpenPostDialog(User currentUser, Post post, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+    public OpenPostDialog(User currentUser, Post post, UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository)
     {
         this.currentUser = currentUser;
-        this.userReposytory = userReposytory;
-        this.postReposytory = postReposytory;
-        this.commentReposytory = commentReposytory;
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
         this.post = post;
-        this.post.user = postReposytory.User(post.id);
+        this.post.user = postRepository.User(post.id);
         this.user = post.user;
-        this.post.comments = postReposytory.CommentsOfPost(this.post.id, this.commentReposytory);
+        this.post.comments = postRepository.CommentsOfPost(this.post.id, this.commentRepository);
         this.postComments = this.post.comments;
         if(this.post.pinnedCommetId == -1)
         {
@@ -157,7 +157,7 @@ public class OpenPostDialog: Dialog
             Width = Dim.Fill() - 4,
             Height = pageLength + 3,
         };
-        if(this.commentReposytory.GetSearchPage(this.postComments, searchValue, this.currentpage - 1, pageLength).Count == 0)
+        if(this.commentRepository.GetSearchPage(this.postComments, searchValue, this.currentpage - 1, pageLength).Count == 0)
         {
             frameView.Add(noCommentLbl);
         }
@@ -197,9 +197,9 @@ public class OpenPostDialog: Dialog
         Comment comment = (Comment)this.allCommentsToPostListView.Source.ToList()[commentindex];
         comment.pinned = "pinned";
         this.post.pinnedCommetId = comment.id;
-        bool updatepost = this.postReposytory.Update(this.post.id, this.post);
-        bool update = this.commentReposytory.Update(comment.id, comment);
-        this.post.comments = this.postReposytory.CommentsOfPost(this.post.id, this.commentReposytory);
+        bool updatepost = this.postRepository.Update(this.post.id, this.post);
+        bool update = this.commentRepository.Update(comment.id, comment);
+        this.post.comments = this.postRepository.CommentsOfPost(this.post.id, this.commentRepository);
         this.post.comments.Remove(comment);
         this.post.comments.Insert(0, comment);
         this.pinnedcomment = true;
@@ -216,9 +216,9 @@ public class OpenPostDialog: Dialog
             if(dialog.GetComment() != null)
             {
                 Comment commnet = dialog.GetComment();
-                this.commentReposytory.Insert(commnet, this.post, this.currentUser);
-                this.user.comments = userReposytory.UserComments(user.id);
-                this.post.comments = postReposytory.CommentsOfPost(post.id, this.commentReposytory);
+                this.commentRepository.Insert(commnet, this.post, this.currentUser);
+                this.user.comments = userRepository.UserComments(user.id);
+                this.post.comments = postRepository.CommentsOfPost(post.id, this.commentRepository);
                 this.postComments = this.post.comments;
                 allCommentsToPostListView.SetSource(this.postComments);
                 UpdateCurrentPage();
@@ -228,18 +228,18 @@ public class OpenPostDialog: Dialog
     private void OnOpenComment(ListViewItemEventArgs args)
     {
         Comment comment = (Comment)args.Value;
-        comment.userId = commentReposytory.UserID(comment.id);
-        User userCC = userReposytory.GetByID(comment.userId);
-        comment.postId = commentReposytory.PostID(comment.id);
-        Post postC = postReposytory.GetByID(comment.postId);
-        OpenCommentDialog dialog = new OpenCommentDialog(this.user, comment, this.userReposytory, this.postReposytory, this.commentReposytory);
+        comment.userId = commentRepository.UserID(comment.id);
+        User userCC = userRepository.GetByID(comment.userId);
+        comment.postId = commentRepository.PostID(comment.id);
+        Post postC = postRepository.GetByID(comment.postId);
+        OpenCommentDialog dialog = new OpenCommentDialog(this.user, comment, this.userRepository, this.postRepository, this.commentRepository);
         dialog.SetComment(comment);
 
         Application.Run(dialog);
 
         if(dialog.deleted)
         {
-            bool result = commentReposytory.Delete(comment, userCC, postC);
+            bool result = commentRepository.Delete(comment, userCC, postC);
             if(result)
             {
                 OnCreateDialogSubmit();
@@ -253,7 +253,7 @@ public class OpenPostDialog: Dialog
         {
             if(dialog.GetComment() != null)
             {
-                bool result = commentReposytory.Update(comment.id, dialog.GetComment());
+                bool result = commentRepository.Update(comment.id, dialog.GetComment());
                 if(result)
                 {
                     UpdateCurrentPage();
@@ -268,7 +268,7 @@ public class OpenPostDialog: Dialog
         if(dialog.unpinned)
         {
             this.post.pinnedCommetId = -1;
-            bool update = this.postReposytory.Update(this.post.id, this.post);
+            bool update = this.postRepository.Update(this.post.id, this.post);
             UpdateCurrentPage();
         }
     }
@@ -283,7 +283,7 @@ public class OpenPostDialog: Dialog
     }
     private void OnNextPage()
     {
-        int totalPages = this.commentReposytory.NumberOfPages(this.postComments, searchValue, pageLength);
+        int totalPages = this.commentRepository.NumberOfPages(this.postComments, searchValue, pageLength);
         if(currentpage >= totalPages)
         {
             return;
@@ -293,7 +293,7 @@ public class OpenPostDialog: Dialog
     }
     private void UpdateCurrentPage()
     {
-        int totalPages = this.commentReposytory.NumberOfPages(this.postComments, searchValue, pageLength);
+        int totalPages = this.commentRepository.NumberOfPages(this.postComments, searchValue, pageLength);
         if(totalPages == 0)
         {
             totalPages = 1;
@@ -305,11 +305,11 @@ public class OpenPostDialog: Dialog
         long postId = post.id;
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
-        this.user.comments = userReposytory.UserComments(user.id);
-        this.post.comments = postReposytory.CommentsOfPost(postId, this.commentReposytory);
-        List<Comment> comments = postReposytory.CommentsOfPost(postId, this.commentReposytory);
+        this.user.comments = userRepository.UserComments(user.id);
+        this.post.comments = postRepository.CommentsOfPost(postId, this.commentRepository);
+        List<Comment> comments = postRepository.CommentsOfPost(postId, this.commentRepository);
         this.postComments = Pinned(comments);
-        if(this.pinnedcomment == true || this.commentReposytory.GetSearchPage(this.postComments, searchValue, this.currentpage - 1, pageLength).Count == 0)
+        if(this.pinnedcomment == true || this.commentRepository.GetSearchPage(this.postComments, searchValue, this.currentpage - 1, pageLength).Count == 0)
         {
             pinBtn.Visible = false;// зробити кнопку прикріпити коментар невидимою
         }
@@ -317,7 +317,7 @@ public class OpenPostDialog: Dialog
         {
             pinBtn.Visible = true;
         }
-        allCommentsToPostListView.SetSource(this.commentReposytory.GetSearchPage(this.postComments, searchValue, this.currentpage - 1, pageLength));
+        allCommentsToPostListView.SetSource(this.commentRepository.GetSearchPage(this.postComments, searchValue, this.currentpage - 1, pageLength));
         
         prevPageBtn.Visible = (currentpage != 1);
         nextPageBtn.Visible = (currentpage != totalPages);
@@ -363,7 +363,7 @@ public class OpenPostDialog: Dialog
         {
             this.updated = true;
             Post updatedpost = dialog.GetPost();
-            bool result = postReposytory.Update(this.post.id, updatedpost);
+            bool result = postRepository.Update(this.post.id, updatedpost);
             if(result)
             {
                 this.post.post = updatedpost.post;

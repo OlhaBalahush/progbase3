@@ -8,17 +8,17 @@ public class GenerationImageWindow: Dialog
 {
     public bool canceled;
     private User currentuser;
-    private UserReposytory userReposytory;
-    private PostReposytory postReposytory;
-    private CommentReposytory commentReposytory;
+    private UserRepository userRepository;
+    private PostRepository postRepository;
+    private CommentRepository commentRepository;
     private TextField year;
     private TextField filename;
-    public GenerationImageWindow(User currentuser, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+    public GenerationImageWindow(User currentuser, UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository)
     {
         this.currentuser = currentuser;
-        this.userReposytory = userReposytory;
-        this.postReposytory = postReposytory;
-        this.commentReposytory = commentReposytory;
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
 
         this.Title = "Statistics";
 
@@ -64,7 +64,7 @@ public class GenerationImageWindow: Dialog
             MessageBox.ErrorQuery("Incorrect input year","there are no statistics for this year","ok");
             return;
         }
-        ImageGeneration imageGeneration = new ImageGeneration(this.currentuser, this.userReposytory, this.postReposytory, this.commentReposytory);
+        ImageGeneration imageGeneration = new ImageGeneration(this.currentuser, this.userRepository, this.postRepository, this.commentRepository);
         imageGeneration.GraphicAndReport(year, filename);
         Application.RequestStop();
     }

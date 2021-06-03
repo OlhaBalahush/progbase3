@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System;
 namespace AccessDataLib
 {
-    public class CommentReposytory
+    public class CommentRepository
     {
         private SqliteConnection connection;
         private int numberOfElementsOnPage = 5;
-        public CommentReposytory(SqliteConnection connection)
+        public CommentRepository(SqliteConnection connection)
         {
             this.connection = connection;
         }

@@ -6,7 +6,6 @@ public class CreateUserDialog: Dialog
     protected bool update = false;
     public bool canceled;
     protected TextField usernameInput;
-    //protected CheckBox moderatorCheck;
     protected TextField passwordInput;
     public CreateUserDialog()
     {
@@ -30,15 +29,6 @@ public class CreateUserDialog: Dialog
             Width = 40,
         };
         this.Add(usernameLbl, usernameInput);
-
-        // Label moderatorLbl = new Label(2,4,"Moderator");
-        // moderatorCheck = new CheckBox ("")
-        // {
-        //     X = rightColumnX,
-        //     Y = Pos.Top(moderatorLbl),
-        //     Width = 40,
-        // };
-        // this.Add(moderatorLbl, moderatorCheck);
 
         Label passwordLbl = new Label(2,4,"Password");
         passwordInput = new TextField ("")
@@ -65,7 +55,7 @@ public class CreateUserDialog: Dialog
         string password = passwordInput.Text.ToString();
         if(username != "" && password != "")
         {
-            User user = new User(username/*, moderator*/, password, DateTime.Now.ToString());
+            User user = new User(username, password, DateTime.Now.ToString());
             user.moderator = false;
             return user;
         }

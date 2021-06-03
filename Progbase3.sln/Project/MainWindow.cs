@@ -4,19 +4,19 @@ using AccessDataLib;
 public class MainWindow: Window
 {
     private User user;
-    private UserReposytory userReposytory;
-    private PostReposytory postReposytory;
-    private CommentReposytory commentReposytory;
+    private UserRepository userRepository;
+    private PostRepository postRepository;
+    private CommentRepository commentRepository;
     private Label welcome;
     private Toplevel top;
     private Rect frame;
     private int pos = 4;
-    public MainWindow(Toplevel top, User user, UserReposytory userReposytory, PostReposytory postReposytory, CommentReposytory commentReposytory)
+    public MainWindow(Toplevel top, User user, UserRepository userRepository, PostRepository postRepository, CommentRepository commentRepository)
     {
         this.user = user;
-        this.userReposytory = userReposytory;
-        this.postReposytory = postReposytory;
-        this.commentReposytory = commentReposytory;
+        this.userRepository = userRepository;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
         this.top = top;
         this.Title = "Social Network";
         frame = new Rect(0, 0, top.Frame.Width, top.Frame.Height);
@@ -54,27 +54,27 @@ public class MainWindow: Window
     }
     private void OnProfileBtnClicked()
     {
-        OpenProfileDialog dialog = new OpenProfileDialog(this.user, this.user, this.userReposytory, this.postReposytory, this.commentReposytory);
+        OpenProfileDialog dialog = new OpenProfileDialog(this.user, this.user, this.userRepository, this.postRepository, this.commentRepository);
         //dialog.SetUser(this.user, this.user.posts);
         Application.Run(dialog);
         this.user = dialog.GetUser();
         welcome.Text = $"Welcome, {this.user.username}";
         if(dialog.deleted)
         {
-            AuthenticationWindow registration = new AuthenticationWindow(this.top, userReposytory, postReposytory, commentReposytory);
+            AuthenticationWindow registration = new AuthenticationWindow(this.top, userRepository, postRepository, commentRepository);
             Application.Top.Add(registration);
             Application.Run();
         }
     }
     private void OnViewUsersBtnClicked()
     {
-        ViewUsersDialog dialog = new ViewUsersDialog(this.user, this.userReposytory, this.postReposytory, this.commentReposytory);
+        ViewUsersDialog dialog = new ViewUsersDialog(this.user, this.userRepository, this.postRepository, this.commentRepository);
         //dialog.SetUser(this.user, this.user.posts);
         Application.Run(dialog);
     }
     private void OnViewPostsBtnClicked()
     {
-        ViewPostsDialog dialog = new ViewPostsDialog(this.user, this.userReposytory, this.postReposytory, this.commentReposytory);
+        ViewPostsDialog dialog = new ViewPostsDialog(this.user, this.userRepository, this.postRepository, this.commentRepository);
         //dialog.SetUser(this.user, this.user.posts);
         Application.Run(dialog);
     }
@@ -89,19 +89,19 @@ public class MainWindow: Window
             if(dialog.GetPost() != null)
             {
                 Post post = dialog.GetPost();
-                this.postReposytory.Insert(post, this.user);
+                this.postRepository.Insert(post, this.user);
                 user.posts.Add(post);
             }
         }
     }
     private void OnExportClicked()
     {
-        ExportWindow dialog  = new ExportWindow(this.postReposytory, this.commentReposytory);
+        ExportWindow dialog  = new ExportWindow(this.postRepository, this.commentRepository);
         Application.Run(dialog);
     }
     private void OnImportClicked()
     {
-        ImportWindow dialog = new ImportWindow(this.postReposytory, this.commentReposytory, this.userReposytory);
+        ImportWindow dialog = new ImportWindow(this.postRepository, this.commentRepository, this.userRepository);
         Application.Run(dialog);
     }
     private void OnAbout(){}
