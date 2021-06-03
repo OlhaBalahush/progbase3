@@ -26,7 +26,6 @@ namespace AccessDataLib
             while (reader.Read())
             {
                 string username = reader.GetString(2);
-                //int moderator = int.Parse(reader.GetString(3));
                 string createdAt = reader.GetString(4);
                 string password = reader.GetString(5);
                 User user = new User(username, password, createdAt);

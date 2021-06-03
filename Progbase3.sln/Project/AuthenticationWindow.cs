@@ -89,9 +89,13 @@ public class AuthenticationWindow: Window
             if(dialog.GetUser() != null)
             {
                 this.user = dialog.GetUser();
-                //sign up
-                Authentication.SignUp(this.userRepository, this.user);
                 if(user == null)
+                {
+                    MessageBox.ErrorQuery("Error","User with such a username already exists, please try again","Ok");
+                    return;
+                }
+                //sign up
+                if(Authentication.SignUp(this.userRepository, this.user) == null)
                 {
                     MessageBox.ErrorQuery("Error","User with such a username already exists, please try again","Ok");
                     return;
