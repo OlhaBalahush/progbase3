@@ -111,12 +111,6 @@ public class OpenCommentDialog: Dialog
     private void OnEditComment()
     {
         EditCommentDialog dialog = new EditCommentDialog();
-        //dialog.SetComment();
-        MessageBox.ErrorQuery("", comment.id.ToString(),"ok");
-        if(this.post == null)
-        {
-            MessageBox.ErrorQuery("","where is post??","ok");
-        }
         dialog.SetComment(this.comment, this.post, this.user);
         Application.Run(dialog);
 
@@ -124,18 +118,14 @@ public class OpenCommentDialog: Dialog
         {
             this.updated = true;
             Comment updatedcomment = dialog.GetComment();
-            //postReposytory.Update(this.post.id, updatedpost);
             this.SetComment(updatedcomment);
-            //MessageBox.ErrorQuery("Update concert", updatedpost.post, "Ok");
             bool result = commentReposytory.Update(this.post.id, updatedcomment);
             if(result)
             {
-                //this.userPosts = GetListOfPosts(user.posts);
                 this.comment.comment = updatedcomment.comment;
                 this.SetComment(this.comment);
                 commentInput.Text = this.comment.comment;
                 this.updated = true;
-                // allCommentsToPostListView.SetSource(this.postComments);
             }
             else
             {
