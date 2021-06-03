@@ -14,7 +14,9 @@ public class ImportWindow: Dialog
         this.postReposytory = postReposytory;
         this.commentReposytory = commentReposytory;
         this.userReposytory = userReposytory;
+
         int rightColumnX = 20;
+        this.Title = "Import";
 
         Label fileNameLbl = new Label(2,4,"File name:");
         filename = new TextField("")

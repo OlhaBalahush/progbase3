@@ -27,7 +27,7 @@ public class ViewPostsDialog: Dialog
         this.commentReposytory = commentReposytory;
         this.currentUser = current;
 
-        this.Title = "Post";
+        this.Title = "All posts";
         Button backBtn = new Button("Back");
         backBtn.Clicked += OnCreateDialogSubmit;
         this.AddButton(backBtn);

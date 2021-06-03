@@ -27,10 +27,9 @@ public class ViewUsersDialog: Dialog
         this.userReposytory = userReposytory;
         this.postReposytory = postReposytory;
         this.commentReposytory = commentReposytory;
-        //this.users;
         this.currentUser = current;
 
-        this.Title = "Post";
+        this.Title = "All Users";
         Button backBtn = new Button("Back");
         backBtn.Clicked += OnCreateDialogSubmit;
         this.AddButton(backBtn);

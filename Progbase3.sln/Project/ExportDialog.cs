@@ -13,7 +13,9 @@ public class ExportWindow: Dialog
     {
         this.postReposytory = postReposytory;
         this.commentReposytory = commentReposytory;
+        
         int rightColumnX = 20;
+        this.Title = "Export";
 
         Label fileNameLbl = new Label(2,4,"File name:");
         filename = new TextField("")
