@@ -17,9 +17,9 @@ namespace AccessDataLib
             connection.Open();
     
             SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"SELECT userComment.idUser, comments.id, comments.pinned, comments.comment, comments.createdAt 
-            FROM userComment, comments WHERE userComment.idUser = $idUser
-            AND comments.id = userComment.idComment";
+            command.CommandText = @"SELECT user_comment.id_user, comments.id, comments.pinned, comments.comment, comments.created_at 
+            FROM user_comment, comments WHERE user_comment.id_user = $idUser
+            AND comments.id = user_comment.id_comment";
             command.Parameters.AddWithValue("$idUser", userID);
             SqliteDataReader reader = command.ExecuteReader();
 
@@ -45,9 +45,9 @@ namespace AccessDataLib
             connection.Open();
     
             SqliteCommand command = connection.CreateCommand();
-            command.CommandText = @"SELECT userPost.idUser, posts.id, posts.post, posts.createdAt 
-            FROM userPost, posts WHERE userPost.idUser = $idUser
-            AND posts.id = userPost.idPost";
+            command.CommandText = @"SELECT user_post.id_user, posts.id, posts.post, posts.created_at 
+            FROM user_post, posts WHERE user_post.id_user = $idUser
+            AND posts.id = user_post.id_post";
             command.Parameters.AddWithValue("$idUser", userID);
             SqliteDataReader reader = command.ExecuteReader();
 
@@ -233,7 +233,7 @@ namespace AccessDataLib
             SqliteCommand command = connection.CreateCommand();
             command.CommandText = 
             @"
-                INSERT INTO users (username, moderator, createdAt, password) 
+                INSERT INTO users (username, moderator, created_at, password) 
                 VALUES ($username, $moderator, $createdAt, $password);
             
                 SELECT last_insert_rowid();

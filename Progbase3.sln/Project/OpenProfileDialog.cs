@@ -31,7 +31,7 @@ public class OpenProfileDialog: Dialog
         this.currentuser = currentuser;
         this.user.posts = userReposytory.UserPosts(this.user.id);
         this.userPosts = user.posts;
-        this.Title = "My profile";
+        this.Title = "Profile";
         allPostOfUserListView = new ListView((IList)null)
         {
             Width = Dim.Fill(),
@@ -98,6 +98,7 @@ public class OpenProfileDialog: Dialog
         Button moderatorBtn = new Button("create moderator");
         if(currentuser.username == user.username)
         {
+            this.Title = "My profile";
             editProfileBtn.Clicked += OnEditProfile;
             this.AddButton(editProfileBtn);
 
@@ -124,6 +125,16 @@ public class OpenProfileDialog: Dialog
             ReadOnly = true,
         };
         this.Add(usernameLbl, usernameInput);
+
+        Label createdAtTimeLbl = new Label(2, 4, "Created at:");
+        DateField createdAtTimeField = new DateField(this.user.createdAt)
+        {
+            X = rightColumnX,
+            Y = Pos.Top(createdAtTimeLbl),
+            Width = 15,
+            ReadOnly = true,
+        };
+        this.Add(createdAtTimeLbl, createdAtTimeField);
 
         this.UpdateCurrentPage();
     }

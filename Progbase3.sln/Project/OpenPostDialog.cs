@@ -95,11 +95,25 @@ public class OpenPostDialog: Dialog
         };
         this.Add(postLbl, postInput);
     
-        Label usernameLbl = new Label(2,6,$"Created by: {this.user.username}"); //мб створити кнопку з переходом на профіль
-        this.Add(usernameLbl);
-        
-        Label createdAt = new Label(2,8,$"Created at: {this.post.createdAt.ToString()}");
-        this.Add(createdAt);
+        Label usernameLbl = new Label(2,6,$"Created by:");
+        TextField usernameField = new TextField(this.user.username)
+        {
+            X = rightColumnX,
+            Y = Pos.Top(usernameLbl),
+            Width = 15,
+            ReadOnly = true,
+        };
+        this.Add(usernameLbl, usernameField);
+
+        Label createdAtTimeLbl = new Label(2, 8, "Created at:");
+        DateField createdAtTimeField = new DateField(this.post.createdAt)
+        {
+            X = rightColumnX,
+            Y = Pos.Top(createdAtTimeLbl),
+            Width = 15,
+            ReadOnly = true,
+        };
+        this.Add(createdAtTimeLbl, createdAtTimeField);
 
         noCommentLbl = new Label("No comment")
         {
