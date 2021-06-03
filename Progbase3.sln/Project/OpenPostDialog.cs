@@ -12,6 +12,7 @@ public class OpenPostDialog: Dialog
     private PostReposytory postReposytory;
     private CommentReposytory commentReposytory;
     private List<Comment> postComments;
+    private string searchValue = "";
     private int pageLength = 5;
     private int currentpage = 1;
     protected Post post;
@@ -142,7 +143,7 @@ public class OpenPostDialog: Dialog
             Width = Dim.Fill() - 4,
             Height = pageLength + 3,
         };
-        if(this.GetSearchPage().Count == 0)
+        if(this.commentReposytory.GetSearchPage(this.postComments, searchValue, this.currentpage - 1, pageLength).Count == 0)
         {
             frameView.Add(noCommentLbl);
         }
@@ -152,7 +153,7 @@ public class OpenPostDialog: Dialog
         }
         this.Add(frameView);
 
-        Button createNewCommentBtn = new Button("Create new comment") // мб змінити розташування
+        Button createNewCommentBtn = new Button("Create new comment")
         {
             X = Pos.Left(frameView),
             Y = Pos.Bottom(frameView) + 2,
@@ -201,11 +202,7 @@ public class OpenPostDialog: Dialog
             if(dialog.GetComment() != null)
             {
                 Comment commnet = dialog.GetComment();
-                // Post post = postReposytory.GetByID(commnet.postId);
-                // User user = userReposytory.GetByID(commnet.userId);
                 this.commentReposytory.Insert(commnet, this.post, this.currentUser);
-                // user.comments.Add(commnet.id);
-                // post.commentIds.Add(commnet.id);
                 this.user.comments = userReposytory.UserComments(user.id);
                 this.post.comments = postReposytory.CommentsOfPost(post.id, this.commentReposytory);
                 this.postComments = this.post.comments;
@@ -214,27 +211,13 @@ public class OpenPostDialog: Dialog
             }
         }
     }
-    private int NumberOfPages()
-    {
-        if(this.postComments != null)
-        {
-            if(this.postComments.Count % pageLength == 0)
-            {
-                return this.postComments.Count / pageLength;
-            }
-            return this.postComments.Count / pageLength + 1;
-        }
-        return 1;
-    }
     private void OnOpenComment(ListViewItemEventArgs args)
     {
         Comment comment = (Comment)args.Value;
         comment.userId = commentReposytory.UserID(comment.id);
         User userCC = userReposytory.GetByID(comment.userId);
-        //MessageBox.ErrorQuery("", userCC.id.ToString(),"ok");
         comment.postId = commentReposytory.PostID(comment.id);
         Post postC = postReposytory.GetByID(comment.postId);
-        //MessageBox.ErrorQuery("", postC.id.ToString(),"ok");
         OpenCommentDialog dialog = new OpenCommentDialog(this.user, comment, this.userReposytory, this.postReposytory, this.commentReposytory);
         dialog.SetComment(comment);
 
@@ -286,7 +269,7 @@ public class OpenPostDialog: Dialog
     }
     private void OnNextPage()
     {
-        int totalPages = this.NumberOfPages();
+        int totalPages = this.commentReposytory.NumberOfPages(this.postComments, searchValue, pageLength);
         if(currentpage >= totalPages)
         {
             return;
@@ -296,7 +279,7 @@ public class OpenPostDialog: Dialog
     }
     private void UpdateCurrentPage()
     {
-        int totalPages = this.NumberOfPages();
+        int totalPages = this.commentReposytory.NumberOfPages(this.postComments, searchValue, pageLength);
         if(totalPages == 0)
         {
             totalPages = 1;
@@ -312,7 +295,7 @@ public class OpenPostDialog: Dialog
         this.post.comments = postReposytory.CommentsOfPost(postId, this.commentReposytory);
         List<Comment> comments = postReposytory.CommentsOfPost(postId, this.commentReposytory);
         this.postComments = Pinned(comments);
-        if(this.pinnedcomment == true || this.GetSearchPage().Count == 0)
+        if(this.pinnedcomment == true || this.commentReposytory.GetSearchPage(this.postComments, searchValue, this.currentpage - 1, pageLength).Count == 0)
         {
             pinBtn.Visible = false;// зробити кнопку прикріпити коментар невидимою
         }
@@ -320,8 +303,7 @@ public class OpenPostDialog: Dialog
         {
             pinBtn.Visible = true;
         }
-        //allCommentsToPostListView.SetSource(this.post.comments);
-        allCommentsToPostListView.SetSource(GetSearchPage());
+        allCommentsToPostListView.SetSource(this.commentReposytory.GetSearchPage(this.postComments, searchValue, this.currentpage - 1, pageLength));
         
         prevPageBtn.Visible = (currentpage != 1);
         nextPageBtn.Visible = (currentpage != totalPages);
@@ -348,30 +330,6 @@ public class OpenPostDialog: Dialog
             this.user = post.user;
             this.postComments = this.post.comments;
         }
-    }
-    private List<Comment> GetSearchPage()
-    {
-        if(this.postComments != null)
-        {
-            int index = 0;
-            int counter = 0;
-            List<Comment> page = new List<Comment>();
-            foreach (Comment item in this.postComments)
-            {
-                if(index >= (currentpage - 1) * pageLength)
-                {
-                    page.Add(item);
-                    counter++;
-                    if(counter == pageLength)
-                    {
-                        break;
-                    }
-                }
-                index++;
-            }
-            return page;
-        }
-        return null;
     }
     public Post GetPost()
     {

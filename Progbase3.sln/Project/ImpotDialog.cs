@@ -1,11 +1,10 @@
-using System;
 using Terminal.Gui;
 using System.Collections.Generic;
 using AccessDataLib;
+using System;
 public class ImportWindow: Dialog
 {
     public bool canceled;
-    // private TextField searchText;
     private TextField filename;
     private PostReposytory postReposytory;
     private CommentReposytory commentReposytory;
@@ -36,17 +35,29 @@ public class ImportWindow: Dialog
     }
     private void OnImportDialog()
     {
-        List<Post> posts = Export_Import.Import(filename.Text.ToString());
-        foreach (Post item in posts)
+        string filepath = filename.Text.ToString();
+        if(filepath.EndsWith(".xml"))
         {
-            postReposytory.Insert(item, item.user);
-            foreach (Comment comment in item.comments)
-            {
-                commentReposytory.Insert(comment, item, this.userReposytory.GetByID(comment.userId));
-            }
-            //MessageBox.ErrorQuery("",item.id.ToString(),"ok");
+            MessageBox.ErrorQuery("Import","File not xml","ok");
+            filename.Text = "";
+            return;
         }
-        Application.RequestStop();
+        List<Post> posts = Export_Import.Import(filepath);
+        if(posts != null)
+        {
+            foreach (Post item in posts)
+            {
+                postReposytory.Insert(item, item.user);
+                foreach (Comment comment in item.comments)
+                {
+                    commentReposytory.Insert(comment, item, this.userReposytory.GetByID(comment.userId));
+                }
+            }
+            Application.RequestStop();
+        }
+        MessageBox.ErrorQuery("Import","File doesn't exist","ok");
+        filename.Text = "";
+        return;
     }
     private void OnCreateDialogCanceled()
     {

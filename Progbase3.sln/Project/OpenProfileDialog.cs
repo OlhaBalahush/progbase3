@@ -9,6 +9,7 @@ public class OpenProfileDialog: Dialog
     private PostReposytory postReposytory;
     private CommentReposytory commentReposytory;
     private List<Post> userPosts;
+    private string searchValue = "";
     private int pageLength = 5;
     private int currentpage = 1;
     protected User user;
@@ -73,7 +74,7 @@ public class OpenProfileDialog: Dialog
             Width = Dim.Fill() - 4,
             Height = pageLength + 3,
         };
-        if(this.GetSearchPage().Count == 0)
+        if(this.postReposytory.GetSearchPage(this.userPosts, searchValue, currentpage - 1, pageLength).Count == 0)
         {
             frameView.Add(noPostLbl);
         }
@@ -108,7 +109,6 @@ public class OpenProfileDialog: Dialog
         }
         else if(currentuser.moderator == true)
         {
-            //create moderator
             moderatorBtn.Clicked += OnCreateModeratorBtn;
             this.AddButton(moderatorBtn);
         }
@@ -151,7 +151,7 @@ public class OpenProfileDialog: Dialog
     }
     private void OnStatisticBtn()
     {
-        GenerationImageWindow dialog = new GenerationImageWindow(this.user, this.userReposytory, this.postReposytory);
+        GenerationImageWindow dialog = new GenerationImageWindow(this.user, this.userReposytory, this.postReposytory, this.commentReposytory);
         Application.Run(dialog);
     }
     private void OnOpenPost(ListViewItemEventArgs args)
@@ -159,7 +159,6 @@ public class OpenProfileDialog: Dialog
         Post post = (Post)args.Value;
         User user = post.user;
         OpenPostDialog dialog = new OpenPostDialog(this.user, post, this.userReposytory, this.postReposytory, this.commentReposytory);
-        //dialog.SetPost(post);
 
         Application.Run(dialog);
 
@@ -168,7 +167,7 @@ public class OpenProfileDialog: Dialog
             bool result = postReposytory.Delete(post, user);
             if(result)
             {
-                int pages = this.NumberOfPages();
+                int pages = this.postReposytory.NumberOfPages(this.userPosts, searchValue, pageLength);
                 if(this.currentpage > pages && pageLength > 1)
                 {
                     pages--;
@@ -205,7 +204,7 @@ public class OpenProfileDialog: Dialog
     }
     private void UpdateCurrentPage()
     {
-        int totalPages = this.NumberOfPages();
+        int totalPages = this.postReposytory.NumberOfPages(this.userPosts, searchValue, pageLength);
         if(totalPages == 0)
         {
             totalPages = 1;
@@ -218,7 +217,7 @@ public class OpenProfileDialog: Dialog
         this.totalPagesLbl.Text = totalPages.ToString();
         this.user.posts = userReposytory.UserPosts(this.user.id);
         this.userPosts = user.posts;
-        allPostOfUserListView.SetSource(GetSearchPage());
+        allPostOfUserListView.SetSource(this.postReposytory.GetSearchPage(this.userPosts, searchValue, currentpage - 1, pageLength));
 
         prevPageBtn.Visible = (this.currentpage != 1);
         nextPageBtn.Visible = (this.currentpage != totalPages);
@@ -235,7 +234,7 @@ public class OpenProfileDialog: Dialog
     }
     private void OnNextPage()
     {
-        int totalPages = this.NumberOfPages();
+        int totalPages = this.postReposytory.NumberOfPages(this.userPosts, searchValue, pageLength);
         if(this.currentpage >= totalPages)
         {
             return;
@@ -255,12 +254,9 @@ public class OpenProfileDialog: Dialog
             this.updated = true;
             User updateduser = dialog.GetUser();
             updateduser.moderator = this.user.moderator;
-            //updateduser = dialog.GetUser();
-            //MessageBox.ErrorQuery("Error", $"{updateduser.username}", "ok");
             bool result = userReposytory.Update(this.user.id, updateduser);
             if(result)
             {
-                //this.userPosts = GetListOfPosts(user.posts);
                 this.user.username = updateduser.username;
                 this.SetUser(this.user);
                 this.usernameInput.Text = user.username;
@@ -286,48 +282,6 @@ public class OpenProfileDialog: Dialog
     {
         return this.user;
     }
-    private List<Post> GetListOfPosts(List<long> postidS)
-    {
-        List<Post> posts = new List<Post>();
-        foreach (long item in postidS)
-        {
-            posts.Add(postReposytory.GetByID(item));
-        }
-        return posts;
-    }
-    private int NumberOfPages()
-    {
-        if(this.userPosts.Count % pageLength == 0)
-        {
-            return this.userPosts.Count / pageLength;
-        }
-        return this.userPosts.Count / pageLength + 1;
-    }
-    private List<Post> GetSearchPage()
-    {
-        //MessageBox.ErrorQuery("", this.userPosts.Count.ToString(), "ok");
-        if(this.userPosts != null)
-        {
-            int index = 0;
-            int counter = 0;
-            List<Post> page = new List<Post>();
-            foreach (Post item in this.userPosts)
-            {
-                if(index >= (currentpage - 1) * pageLength)
-                {
-                    page.Add(item);
-                    counter++;
-                    if(counter == pageLength)
-                    {
-                        break;
-                    }
-                }
-                index++;
-            }
-            return page;
-        }
-        return null;
-    }
     private void OnPostDelete()
     {
         int index = MessageBox.Query("Delete your profile", "Are you sure?", "No", "Yes");
@@ -335,7 +289,6 @@ public class OpenProfileDialog: Dialog
         {
             this.deleted = true;
             Application.RequestStop();
-            //long userId = this.user.id;
             this.user.posts = this.userReposytory.UserPosts(this.user.id);
             this.user.comments = this.userReposytory.UserComments(this.user.id);
             List<Post> postsOfuser = this.user.posts;
@@ -357,7 +310,7 @@ public class OpenProfileDialog: Dialog
             List<Comment> commentsOfuser = this.user.comments;
             foreach (Comment item in commentsOfuser)
             {
-                item.userId = user.id; //this.commentReposytory.UserID(item.id);
+                item.userId = user.id; 
                 item.postId = this.commentReposytory.PostID(item.id);
                 Post post = this.postReposytory.GetByID(item.postId);
                 bool deltecomment = this.commentReposytory.Delete(item, this.user, post);
@@ -366,7 +319,7 @@ public class OpenProfileDialog: Dialog
                     MessageBox.ErrorQuery("Delete comment of user", "Can't delete comment", "Ok");
                 }
             }
-            bool delete = userReposytory.Delete(this.user.id); // checkitem
+            bool delete = userReposytory.Delete(this.user.id);
             if(!delete)
             {
                 MessageBox.ErrorQuery("Delete user", "Can't delete user", "Ok");

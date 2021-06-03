@@ -5,8 +5,6 @@ using AccessDataLib;
 
 public class ViewPostsDialog: Dialog
 {
-    // public bool deleted;
-    // public bool updated = false;
     private UserReposytory userReposytory;
     private PostReposytory postReposytory;
     private CommentReposytory commentReposytory;
@@ -27,15 +25,12 @@ public class ViewPostsDialog: Dialog
         this.userReposytory = userReposytory;
         this.postReposytory = postReposytory;
         this.commentReposytory = commentReposytory;
-        //this.users;
         this.currentUser = current;
 
         this.Title = "Post";
         Button backBtn = new Button("Back");
         backBtn.Clicked += OnCreateDialogSubmit;
         this.AddButton(backBtn);
-
-        //int rightColumnX = 20;
 
         noPostLbl = new Label("No post")
         {
@@ -79,7 +74,7 @@ public class ViewPostsDialog: Dialog
             Width = Dim.Fill() - 4,
             Height = pageLength + 3,
         };
-        if(postReposytory.GetSearchPage(searchValue, currentpage, pageLength).Count == 0)
+        if(postReposytory.GetSearchPage(null, searchValue, currentpage, pageLength).Count == 0)
         {
             frameView.Add(noPostLbl);
         }
@@ -105,7 +100,7 @@ public class ViewPostsDialog: Dialog
     }
     private void UpdateCurrentPage()
     {
-        int totalPages = postReposytory.NumberOfPages(this.searchValue, this.pageLength);
+        int totalPages = postReposytory.NumberOfPages(null, this.searchValue, this.pageLength);
         if(totalPages == 0)
         {
             totalPages = 1;
@@ -116,12 +111,7 @@ public class ViewPostsDialog: Dialog
         }
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
-
-        // this.user.comments = userReposytory.UserComments(user.id);
-        // this.post.commentIds = postReposytory.CommentsOfPostID(postId);
-        // this.postComments = GetListOfComments(this.post.commentIds);
-        // allCommentsToPostListView.SetSource(this.postComments);
-        allPostListView.SetSource(postReposytory.GetSearchPage(searchValue,  currentpage, this.pageLength));
+        allPostListView.SetSource(postReposytory.GetSearchPage(null, searchValue,  currentpage, this.pageLength));
         
         prevPageBtn.Visible = (currentpage != 1);
         nextPageBtn.Visible = (currentpage != totalPages);
@@ -137,7 +127,7 @@ public class ViewPostsDialog: Dialog
     }
     private void OnNextPage()
     {
-        int totalPages = postReposytory.NumberOfPages(this.searchValue, this.pageLength);
+        int totalPages = postReposytory.NumberOfPages(null, this.searchValue, this.pageLength);
         if(currentpage >= totalPages)
         {
             return;
@@ -158,7 +148,7 @@ public class ViewPostsDialog: Dialog
             bool result = postReposytory.Delete(post, user);
             if(result)
             {
-                int pages = postReposytory.NumberOfPages(searchValue, pageLength);
+                int pages = postReposytory.NumberOfPages(null, searchValue, pageLength);
                 if(currentpage > pages && pageLength > 1)
                 {
                     pages--;
@@ -166,7 +156,7 @@ public class ViewPostsDialog: Dialog
                 }
                 this.UpdateCurrentPage();
                 //this.users = 
-                allPostListView.SetSource(postReposytory.PostsOnPage(currentpage));
+                allPostListView.SetSource(postReposytory.PostsOnPage(null, currentpage));
             }
             else
             {
@@ -180,9 +170,7 @@ public class ViewPostsDialog: Dialog
                 bool result = postReposytory.Update(post.id, dialog.GetPost());
                 if(result)
                 {
-                    // this.currentUser.posts = userReposytory.UserPosts(this.currentUser.id);
-                    // this.userPosts = GetListOfPosts(this.currentUser.posts);
-                    allPostListView.SetSource(postReposytory.PostsOnPage(currentpage));
+                    allPostListView.SetSource(postReposytory.PostsOnPage(null, currentpage));
                     this.UpdateCurrentPage();
                 }
                 else
