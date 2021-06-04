@@ -111,8 +111,17 @@ public class ViewPostsDialog: Dialog
         }
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
-        allPostListView.SetSource(postRepository.GetSearchPage(null, searchValue,  currentpage, this.pageLength));
-        
+        List<Post> posts = postRepository.GetSearchPage(null, searchValue,  currentpage, this.pageLength);
+        if(posts.Count != 0)
+        {
+            allPostListView.SetSource(posts);  
+            frameView.Add(allPostListView); 
+        }
+        else
+        {
+            frameView.Add(noPostLbl);
+        }
+
         prevPageBtn.Visible = (currentpage != 1);
         nextPageBtn.Visible = (currentpage != totalPages);
     }

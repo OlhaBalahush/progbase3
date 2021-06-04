@@ -77,7 +77,6 @@ namespace AccessDataLib
             plt.SaveFig(filenameimage);
             GenerationReport();
 
-            //?????
             DeleteFiles(@"./template/_rels");
             DeleteFiles(@"./template/docProps");
             DeleteFiles(@"./template/word/_rels");

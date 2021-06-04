@@ -43,12 +43,12 @@ public class ImportWindow: Dialog
             filename.Text = "";
             return;
         }
-        // if(!File.Exists(filepath))
-        // {
-        //     MessageBox.ErrorQuery("Import","File doesn't exist","ok");
-        //     filename.Text = "";
-        //     return;
-        // }
+        if(!File.Exists(filepath))
+        {
+            MessageBox.ErrorQuery("Import","File doesn't exist","ok");
+            filename.Text = "";
+            return;
+        }
         List<Post> posts = Export_Import.Import(filepath);
         if(posts != null)
         {

@@ -111,7 +111,16 @@ public class ViewUsersDialog: Dialog
         }
         this.pageLbl.Text = currentpage.ToString();
         this.totalPagesLbl.Text = totalPages.ToString();
-        allUserListView.SetSource(userRepository.GetSearchPage(searchValue,  currentpage, this.pageLength));
+        List<User> users = userRepository.GetSearchPage(searchValue,  currentpage, this.pageLength);
+        if(users.Count != 0)
+        {
+            allUserListView.SetSource(users);  
+            frameView.Add(allUserListView); 
+        }
+        else
+        {
+            frameView.Add(noUserLbl);
+        }
         
         prevPageBtn.Visible = (currentpage != 1);
         nextPageBtn.Visible = (currentpage != totalPages);
