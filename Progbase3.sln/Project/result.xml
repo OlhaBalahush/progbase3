@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfPost xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <post id="76">
+    <text>Not maybe</text>
+    <pinned_x0020_comment>-1</pinned_x0020_comment>
+    <createdAt>2021-06-04T02:13:12</createdAt>
+    <user>
+      <id>71</id>
+      <username>Tanya</username>
+      <moderator>false</moderator>
+      <comments />
+      <posts />
+      <password>831e2b469162bf6c35e7a5ae54e8b0c243a6caf4b64072ab82bc554486cff322</password>
+      <createdAt>2019-11-02T13:45:52</createdAt>
+    </user>
+    <comments />
+  </post>
+</ArrayOfPost>

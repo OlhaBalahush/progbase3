@@ -44,6 +44,11 @@ public class CreateCommentDialog: Dialog
     }
     private void OnCreateDialogSubmit()
     {
+        if(commentInput.Text.ToString() == "")
+        {
+            MessageBox.ErrorQuery("Error","Comment can't be null","ok");
+            return;
+        }
         this.canceled = false;
         Application.RequestStop();
     }

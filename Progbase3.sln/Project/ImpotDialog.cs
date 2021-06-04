@@ -1,7 +1,6 @@
 using Terminal.Gui;
 using System.Collections.Generic;
 using AccessDataLib;
-using System;
 public class ImportWindow: Dialog
 {
     public bool canceled;
@@ -38,12 +37,18 @@ public class ImportWindow: Dialog
     private void OnImportDialog()
     {
         string filepath = filename.Text.ToString();
-        if(filepath.EndsWith(".xml"))
+        if(!filepath.EndsWith(".xml"))
         {
             MessageBox.ErrorQuery("Import","File not xml","ok");
             filename.Text = "";
             return;
         }
+        // if(!File.Exists(filepath))
+        // {
+        //     MessageBox.ErrorQuery("Import","File doesn't exist","ok");
+        //     filename.Text = "";
+        //     return;
+        // }
         List<Post> posts = Export_Import.Import(filepath);
         if(posts != null)
         {
@@ -56,10 +61,8 @@ public class ImportWindow: Dialog
                 }
             }
             Application.RequestStop();
+            return;
         }
-        MessageBox.ErrorQuery("Import","File doesn't exist","ok");
-        filename.Text = "";
-        return;
     }
     private void OnCreateDialogCanceled()
     {

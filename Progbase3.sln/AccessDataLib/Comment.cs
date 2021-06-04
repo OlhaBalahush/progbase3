@@ -3,6 +3,7 @@ using System.Xml.Serialization;
 using System.Xml;
 namespace AccessDataLib
 {
+    //[XmlType(TypeName = "comment")]
     public class Comment
     {
         [XmlAttribute()]

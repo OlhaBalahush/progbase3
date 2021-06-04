@@ -28,10 +28,9 @@ public class CreatePostDialog: Dialog
         {
             X = rightColumnX,
             Y = Pos.Bottom(postLbl),
-            Width = Dim.Fill(5),  // margin width
+            Width = Dim.Fill(5),
             Height = Dim.Percent(50),
             Text = "Some\r\ntest\r\nLast line!",
-            //TabWidth = 5,
         };
         this.Add(postLbl, postInput);
     }
@@ -42,20 +41,17 @@ public class CreatePostDialog: Dialog
     }
     private void OnCreateDialogSubmit()
     {
+        if(postInput.Text.ToString() == null || postInput.Text.ToString() == "")
+        {
+            MessageBox.ErrorQuery("Error","Post can't be null","ok");
+            return;
+        }
         this.canceled = false;
         Application.RequestStop();
     }
     public Post GetPost()
     {
         string postText = postInput.Text.ToString();
-        // int maxLenght = 20; // кількість символів у рядку
-        // char [] ch = postText.ToCharArray();
-        // int j = 1;
-        // for(int i = 0; i < maxLenght; i++)
-        // {
-        //     if(ch[maxLenght * j] != 32)
-        //     {}
-        // }
         if(postText != null)
         {
             Post post = new Post(postText, DateTime.Now.ToString());

@@ -219,7 +219,7 @@ namespace AccessDataLib
             List<Post> currentPosts;
             if(numberOfElementsOnPage != -1)
             {
-                for(int i = 1; i <= NumberOfPages(postsOfUser, "", numberOfElementsOnPage); i++)
+                for(int i = 1; i <= NumberOfPages(postsOfUser, ""/*searchValue*/, numberOfElementsOnPage); i++)
                 {
                     currentPosts = PostsOnPage(postsOfUser, i);
                     foreach (Post item in currentPosts)
@@ -232,7 +232,7 @@ namespace AccessDataLib
                 }
                 return posts;
             }
-            for(int i = 1; i <= NumberOfPages(postsOfUser, "", numberOfElementsOnPage); i++)
+            for(int i = 1; i <= NumberOfPages(postsOfUser, searchValue, (int)this.GetCount()); i++)
             {
                 currentPosts = PostsOnPage(postsOfUser, -1);
                 foreach (Post item in currentPosts)

@@ -17,7 +17,7 @@ namespace AccessDataLib
         public DateTime createdAt;
         //[XmlElement("userId")]
         public User user;
-        [XmlElement("comments")]
+        //[XmlElement("comments")]
         public List<Comment> comments;
         public Post(){}
         public Post(string post, string createdAt)

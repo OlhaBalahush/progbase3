@@ -46,6 +46,11 @@ public class CreateUserDialog: Dialog
     }
     private void OnCreateDialogSubmit()
     {
+        if(usernameInput.Text.ToString() == "" || passwordInput.Text.ToString() == "")
+        {
+            MessageBox.ErrorQuery("Error","String can't be null","ok");
+            return;
+        }
         this.canceled = false;
         Application.RequestStop();
     }
